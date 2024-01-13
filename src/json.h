@@ -4,6 +4,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#if defined(_MSC_VER)
+#   pragma warning(disable: 4200)
+#endif
+
 typedef uint8_t js_result_t;
 typedef uint8_t js_bool_t;
 typedef size_t js_size_t;
