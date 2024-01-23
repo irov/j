@@ -1,9 +1,9 @@
 #include "json.h"
+#include "json_dump.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
-
 
 //////////////////////////////////////////////////////////////////////////
 typedef struct js_stats_t

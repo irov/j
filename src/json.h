@@ -138,16 +138,4 @@ void js_array_foreach( const js_element_t * _element, js_array_foreach_fun_t _fo
 typedef void(*js_object_foreach_fun_t)(js_size_t _index, const js_element_t * _key, const js_element_t * _value, void * _ud);
 void js_object_foreach( const js_element_t * _element, js_object_foreach_fun_t _foreach, void * _ud );
 
-typedef char * (*js_dump_buffer_fun_t)(js_size_t _size, void * _ud);
-
-typedef struct js_dump_ctx_t
-{   
-    js_dump_buffer_fun_t buffer;
-    void * ud;
-} js_dump_ctx_t;
-
-void js_make_dump_ctx_buffer( js_buffer_t * _buffer, js_dump_ctx_t * const _ctx );
-
-js_result_t js_dump( const js_element_t * _element, js_dump_ctx_t * _ctx );
-
 #endif
