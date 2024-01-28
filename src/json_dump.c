@@ -21,7 +21,7 @@ static void __js_dump_char( js_dump_ctx_t * _ctx, char _value )
     *(dst) = _value;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __js_dump_string( js_dump_ctx_t * _ctx, const char * _value, js_size_t _size )
+static void __js_dump_string_internal( js_dump_ctx_t * _ctx, const char * _value, size_t _size )
 {
     char * dst = (*_ctx->buffer)(_size, _ctx->ud);
 
@@ -33,11 +33,16 @@ static void __js_dump_string( js_dump_ctx_t * _ctx, const char * _value, js_size
     __js_memcpy( dst, _value, _size );
 }
 //////////////////////////////////////////////////////////////////////////
-#define JS_DUMP_INTERNAL(data, value) __js_dump_string(data, value, sizeof(value) - 1)
+static void __js_dump_string( js_dump_ctx_t * _ctx, js_string_t _value )
+{
+    __js_dump_string_internal( _ctx, _value.value, _value.size );
+}
+//////////////////////////////////////////////////////////////////////////
+#define JS_DUMP_INTERNAL(data, value) __js_dump_string_internal(data, value, sizeof(value) - 1)
 //////////////////////////////////////////////////////////////////////////
 #define JS_MAX_INTEGER_SYMBOLS 20
 //////////////////////////////////////////////////////////////////////////
-static void __js_dump_integer( js_dump_ctx_t * _ctx, js_integer_value_t _value )
+static void __js_dump_integer( js_dump_ctx_t * _ctx, js_integer_t _value )
 {
     char symbols[JS_MAX_INTEGER_SYMBOLS];
 
@@ -53,7 +58,7 @@ static void __js_dump_integer( js_dump_ctx_t * _ctx, js_integer_value_t _value )
 
         while( _value )
         {
-            js_integer_value_t symbol = _value % 10;
+            js_integer_t symbol = _value % 10;
             _value /= 10;
 
             *--it = '0' + (char)symbol;
@@ -65,7 +70,7 @@ static void __js_dump_integer( js_dump_ctx_t * _ctx, js_integer_value_t _value )
     {
         while( _value )
         {
-            js_integer_value_t symbol = _value % 10;
+            js_integer_t symbol = _value % 10;
             _value /= 10;
 
             *--it = '0' + (char)symbol;
@@ -225,11 +230,10 @@ static void __js_dump_object_element( js_size_t _index, const js_element_t * _ke
 
     __js_dump_char( ctx, '"' );
 
-    const char * key_str;
-    js_size_t key_size;
-    js_get_string( _key, &key_str, &key_size );
+    js_string_t key;
+    js_get_string( _key, &key );
 
-    __js_dump_string( ctx, key_str, key_size );
+    __js_dump_string( ctx, key );
     __js_dump_char( ctx, '"' );
 
     __js_dump_char( ctx, ':' );
@@ -264,25 +268,23 @@ static void __js_dump_element( js_dump_ctx_t * _ctx, const js_element_t * _eleme
         }break;
     case js_type_integer:
         {
-            js_integer_value_t value = js_get_integer( _element );
+            js_integer_t value = js_get_integer( _element );
 
             __js_dump_integer( _ctx, value );
         }break;
     case js_type_real:
         {
-            js_real_value_t value = js_get_real( _element );
+            js_real_t value = js_get_real( _element );
 
             __js_dump_double( _ctx, value, 6 );
         }break;
     case js_type_string:
         {
-            const char * str;
-            js_size_t size;
-
-            js_get_string( _element, &str, &size );
+            js_string_t str;
+            js_get_string( _element, &str );
 
             __js_dump_char( _ctx, '"' );
-            __js_dump_string( _ctx, str, size );
+            __js_dump_string( _ctx, str );
             __js_dump_char( _ctx, '"' );
         }break;
     case js_type_array:

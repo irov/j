@@ -47,7 +47,7 @@ static void __binary_write_size( js_binary_ctx_t * _ctx, js_size_t _size )
 //////////////////////////////////////////////////////////////////////////
 static void __binary_write_integer( js_binary_ctx_t * _ctx, const js_element_t * _element )
 {
-    js_integer_value_t value = js_get_integer( _element );
+    js_integer_t value = js_get_integer( _element );
 
     if( value == 0 )
     {
@@ -60,37 +60,35 @@ static void __binary_write_integer( js_binary_ctx_t * _ctx, const js_element_t *
     else
     {
         __binary_write_type( _ctx, js_binary_type_integer );
-        _ctx->write( &value, sizeof( js_integer_value_t ), _ctx->ud );
+        _ctx->write( &value, sizeof( js_integer_t ), _ctx->ud );
     }
 }
 //////////////////////////////////////////////////////////////////////////
 static void __binary_write_real( js_binary_ctx_t * _ctx, const js_element_t * _element )
 {
-    js_real_value_t value = js_get_real( _element );
+    js_real_t value = js_get_real( _element );
 
-    if( value == (js_real_value_t)0.0 )
+    if( value == (js_real_t)0.0 )
     {
         __binary_write_type( _ctx, js_binary_type_real_z );
     }
-    else if( value == (js_real_value_t)1.0 )
+    else if( value == (js_real_t)1.0 )
     {
         __binary_write_type( _ctx, js_binary_type_real_1 );
     }
     else
     {
         __binary_write_type( _ctx, js_binary_type_real );
-        _ctx->write( &value, sizeof( js_real_value_t ), _ctx->ud );
+        _ctx->write( &value, sizeof( js_real_t ), _ctx->ud );
     }
 }
 //////////////////////////////////////////////////////////////////////////
 static void __binary_write_string( js_binary_ctx_t * _ctx, const js_element_t * _element )
 {
-    const char * str;
-    js_size_t size;
+    js_string_t str;
+    js_get_string( _element, &str );
 
-    js_get_string( _element, &str, &size );
-
-    if( size == 0 )
+    if( str.size == 0 )
     {
         __binary_write_type( _ctx, js_binary_type_string_z );
 
@@ -99,8 +97,8 @@ static void __binary_write_string( js_binary_ctx_t * _ctx, const js_element_t * 
 
     __binary_write_type( _ctx, js_binary_type_string );
 
-    __binary_write_size( _ctx, size );
-    _ctx->write( str, size, _ctx->ud );
+    __binary_write_size( _ctx, str.size );
+    _ctx->write( str.value, str.size, _ctx->ud );
 }
 //////////////////////////////////////////////////////////////////////////
 static void __binary_write_array_foreach( js_size_t _index, const js_element_t * _value, void * _ud )

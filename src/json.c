@@ -25,46 +25,45 @@ typedef struct js_element_t
     js_type_e type;
 } js_element_t;
 //////////////////////////////////////////////////////////////////////////
-typedef struct js_null_t
+typedef struct js_element_null_t
 {
     js_element_t base;
-} js_null_t;
+} js_element_null_t;
 //////////////////////////////////////////////////////////////////////////
-typedef struct js_false_t
+typedef struct js_element_false_t
 {
     js_element_t base;
-} js_false_t;
+} js_element_false_t;
 //////////////////////////////////////////////////////////////////////////
-typedef struct js_true_t
+typedef struct js_element_true_t
 {
     js_element_t base;
-} js_true_t;
+} js_element_true_t;
 //////////////////////////////////////////////////////////////////////////
-typedef struct js_integer_t
+typedef struct js_element_integer_t
 {
     js_element_t base;
-    js_integer_value_t value;
-} js_integer_t;
+    js_integer_t value;
+} js_element_integer_t;
 //////////////////////////////////////////////////////////////////////////
-typedef struct js_real_t
+typedef struct js_element_real_t
 {
     js_element_t base;
-    js_real_value_t value;
-} js_real_t;
+    js_real_t value;
+} js_element_real_t;
 //////////////////////////////////////////////////////////////////////////
-typedef struct js_string_t
+typedef struct js_element_string_t
 {
     js_element_t base;
-    const char * value;
-    js_size_t size;
-} js_string_t;
+    js_string_t value;
+} js_element_string_t;
 //////////////////////////////////////////////////////////////////////////
-typedef struct js_string_buffer_t
+typedef struct js_element_string_buffer_t
 {
-    js_string_t base;
+    js_element_string_t base;
 
     char buffer[];
-} js_string_buffer_t;
+} js_element_string_buffer_t;
 //////////////////////////////////////////////////////////////////////////
 typedef struct js_node_t
 {
@@ -80,31 +79,31 @@ typedef struct js_block_t
     struct js_block_t * prev;
 } js_block_t;
 //////////////////////////////////////////////////////////////////////////
-typedef struct js_object_t
+typedef struct js_element_object_t
 {
     js_element_t base;
     js_size_t size;
     js_node_t * keys;
     js_node_t * values;
-} js_object_t;
+} js_element_object_t;
 //////////////////////////////////////////////////////////////////////////
-typedef struct js_array_t
+typedef struct js_element_array_t
 {
     js_element_t base;
     js_size_t size;
     js_node_t * values;
-} js_array_t;
+} js_element_array_t;
 //////////////////////////////////////////////////////////////////////////
 typedef struct js_document_t
 {
-    js_object_t object;
+    js_element_object_t object;
     js_allocator_t allocator;
     js_flags_e flags;
 
     js_node_t * (*node_create)(struct js_document_t * _document, js_element_t * _element);
     void (*node_destroy)(struct js_document_t * _document, js_node_t * _node);
-    js_string_t * (*string_create)(js_allocator_t * _allocator, const char * _value, js_size_t _size);
-    void (*string_destroy)(js_allocator_t * _allocator, js_string_t * _string);
+    js_element_string_t * (*string_create)(js_allocator_t * _allocator, const char * _value, size_t _size);
+    void (*string_destroy)(js_allocator_t * _allocator, js_element_string_t * _string);
 
     js_node_t * free_node;
     js_block_t * free_block;
@@ -117,35 +116,35 @@ static js_allocator_t * __js_document_allocator( js_document_t * _document )
     return allocator;
 }
 //////////////////////////////////////////////////////////////////////////
-static js_null_t * __js_null_create( js_allocator_t * _allocator )
+static js_element_null_t * __js_null_create( js_allocator_t * _allocator )
 {
     JS_UNUSED( _allocator );
 
-    static js_null_t cache_null = {js_type_null};
+    static js_element_null_t cache_null = {js_type_null};
 
-    js_null_t * null = &cache_null;
+    js_element_null_t * null = &cache_null;
 
     return null;
 }
 //////////////////////////////////////////////////////////////////////////
-static js_false_t * __js_false_create( js_allocator_t * _allocator )
+static js_element_false_t * __js_false_create( js_allocator_t * _allocator )
 {
     JS_UNUSED( _allocator );
 
-    static js_false_t cache_false = {js_type_false};
+    static js_element_false_t cache_false = {js_type_false};
 
-    js_false_t * f = &cache_false;
+    js_element_false_t * f = &cache_false;
 
     return f;
 }
 //////////////////////////////////////////////////////////////////////////
-static js_true_t * __js_true_create( js_allocator_t * _allocator )
+static js_element_true_t * __js_true_create( js_allocator_t * _allocator )
 {
     JS_UNUSED( _allocator );
 
-    static js_true_t cache_true = {js_type_true};
+    static js_element_true_t cache_true = {js_type_true};
 
-    js_true_t * t = &cache_true;
+    js_element_true_t * t = &cache_true;
 
     return t;
 }
@@ -186,36 +185,36 @@ static js_true_t * __js_true_create( js_allocator_t * _allocator )
     {js_type_integer, - N * 16 - 14}, \
     {js_type_integer, - N * 16 - 15}
 //////////////////////////////////////////////////////////////////////////
-static js_integer_t * __js_integer_create( js_allocator_t * _allocator, js_integer_value_t _value )
+static js_element_integer_t * __js_integer_create( js_allocator_t * _allocator, js_integer_t _value )
 {
     if( _value >= 0 && _value < 256 )
     {
-        static js_integer_t cache_positive_integers[256] = {
+        static js_element_integer_t cache_positive_integers[256] = {
             JS_DECLARE_POSINT( 0 ), JS_DECLARE_POSINT( 1 ), JS_DECLARE_POSINT( 2 ), JS_DECLARE_POSINT( 3 ),
             JS_DECLARE_POSINT( 4 ), JS_DECLARE_POSINT( 5 ), JS_DECLARE_POSINT( 6 ), JS_DECLARE_POSINT( 7 ),
             JS_DECLARE_POSINT( 8 ), JS_DECLARE_POSINT( 9 ), JS_DECLARE_POSINT( 10 ), JS_DECLARE_POSINT( 11 ),
             JS_DECLARE_POSINT( 12 ), JS_DECLARE_POSINT( 13 ), JS_DECLARE_POSINT( 14 ), JS_DECLARE_POSINT( 15 )
         };
 
-        js_integer_t * integer = cache_positive_integers + _value;
+        js_element_integer_t * integer = cache_positive_integers + _value;
 
         return integer;
     }
     else if( _value < 0 && _value > -256 )
     {
-        static js_integer_t cache_negative_integers[256] = {
+        static js_element_integer_t cache_negative_integers[256] = {
             JS_DECLARE_NEGINT( 0 ), JS_DECLARE_NEGINT( 1 ), JS_DECLARE_NEGINT( 2 ), JS_DECLARE_NEGINT( 3 ),
             JS_DECLARE_NEGINT( 4 ), JS_DECLARE_NEGINT( 5 ), JS_DECLARE_NEGINT( 6 ), JS_DECLARE_NEGINT( 7 ),
             JS_DECLARE_NEGINT( 8 ), JS_DECLARE_NEGINT( 9 ), JS_DECLARE_NEGINT( 10 ), JS_DECLARE_NEGINT( 11 ),
             JS_DECLARE_NEGINT( 12 ), JS_DECLARE_NEGINT( 13 ), JS_DECLARE_NEGINT( 14 ), JS_DECLARE_NEGINT( 15 )
         };
 
-        js_integer_t * integer = cache_negative_integers - _value;
+        js_element_integer_t * integer = cache_negative_integers - _value;
 
         return integer;
     }
 
-    js_integer_t * integer = JS_ALLOCATOR_NEW( _allocator, js_integer_t );
+    js_element_integer_t * integer = JS_ALLOCATOR_NEW( _allocator, js_element_integer_t );
 
     JS_ALLOCATOR_MEMORY_CHECK( integer, JS_NULLPTR );
 
@@ -226,26 +225,26 @@ static js_integer_t * __js_integer_create( js_allocator_t * _allocator, js_integ
     return integer;
 }
 //////////////////////////////////////////////////////////////////////////
-static js_real_t * __js_real_create( js_allocator_t * _allocator, js_real_value_t _value )
+static js_element_real_t * __js_real_create( js_allocator_t * _allocator, js_real_t _value )
 {
     if( _value == 0.0 )
     {
-        static js_real_t cache_zero_real = {js_type_real, 0.0};
+        static js_element_real_t cache_zero_real = {js_type_real, 0.0};
 
-        js_real_t * real = &cache_zero_real;
+        js_element_real_t * real = &cache_zero_real;
 
         return real;
     }
     else if( _value == 1.0 )
     {
-        static js_real_t cache_one_real = {js_type_real, 1.0};
+        static js_element_real_t cache_one_real = {js_type_real, 1.0};
 
-        js_real_t * real = &cache_one_real;
+        js_element_real_t * real = &cache_one_real;
 
         return real;
     }
 
-    js_real_t * real = JS_ALLOCATOR_NEW( _allocator, js_real_t );
+    js_element_real_t * real = JS_ALLOCATOR_NEW( _allocator, js_element_real_t );
 
     JS_ALLOCATOR_MEMORY_CHECK( real, JS_NULLPTR );
 
@@ -256,44 +255,50 @@ static js_real_t * __js_real_create( js_allocator_t * _allocator, js_real_value_
     return real;
 }
 //////////////////////////////////////////////////////////////////////////
-static js_string_t * __js_string_create_allocator( js_allocator_t * _allocator, const char * _value, js_size_t _size )
+static js_element_string_t * __js_string_create_allocator( js_allocator_t * _allocator, const char * _value, size_t _size )
 {
-    js_string_buffer_t * string_buffer = JS_ALLOCATOR_NEW_EX( _allocator, js_string_buffer_t, _size );
+    js_element_string_buffer_t * string_buffer = JS_ALLOCATOR_NEW_EX( _allocator, js_element_string_buffer_t, _size );
 
     JS_ALLOCATOR_MEMORY_CHECK( string_buffer, JS_NULLPTR );
 
     string_buffer->base.base.type = js_type_string;
 
-    string_buffer->base.value = string_buffer->buffer;
-    string_buffer->base.size = _size;
+    string_buffer->base.value.value = string_buffer->buffer;
+    string_buffer->base.value.size = _size;
 
-    for( js_size_t index = 0; index != _size; ++index )
+    char * it_buffer = string_buffer->buffer;
+
+    for( const char * it_value = _value,
+        *it_value_end = _value + _size;
+        it_value != it_value_end; ++it_value )
     {
-        string_buffer->buffer[index] = _value[index];
+        char c = *it_value;
+
+        *it_buffer++ = c;
     }
 
-    js_string_t * string = (js_string_t *)string_buffer;
+    js_element_string_t * string = (js_element_string_t *)string_buffer;
 
     return string;
 }
 //////////////////////////////////////////////////////////////////////////
-static js_string_t * __js_string_create_inplace( js_allocator_t * _allocator, const char * _value, js_size_t _size )
+static js_element_string_t * __js_string_create_inplace( js_allocator_t * _allocator, const char * _value, size_t _size )
 {
-    js_string_t * string = JS_ALLOCATOR_NEW( _allocator, js_string_t );
+    js_element_string_t * string = JS_ALLOCATOR_NEW( _allocator, js_element_string_t );
 
     JS_ALLOCATOR_MEMORY_CHECK( string, JS_NULLPTR );
 
     string->base.type = js_type_string;
 
-    string->value = _value;
-    string->size = _size;
+    string->value.value = _value;
+    string->value.size = _size;
 
     return string;
 }
 //////////////////////////////////////////////////////////////////////////
-static js_object_t * __js_object_create( js_allocator_t * _allocator )
+static js_element_object_t * __js_object_create( js_allocator_t * _allocator )
 {
-    js_object_t * object = JS_ALLOCATOR_NEW( _allocator, js_object_t );
+    js_element_object_t * object = JS_ALLOCATOR_NEW( _allocator, js_element_object_t );
 
     JS_ALLOCATOR_MEMORY_CHECK( object, JS_NULLPTR );
 
@@ -306,9 +311,9 @@ static js_object_t * __js_object_create( js_allocator_t * _allocator )
     return object;
 }
 //////////////////////////////////////////////////////////////////////////
-static js_array_t * __js_array_create( js_allocator_t * _allocator )
+static js_element_array_t * __js_array_create( js_allocator_t * _allocator )
 {
-    js_array_t * array = JS_ALLOCATOR_NEW( _allocator, js_array_t );
+    js_element_array_t * array = JS_ALLOCATOR_NEW( _allocator, js_element_array_t );
 
     JS_ALLOCATOR_MEMORY_CHECK( array, JS_NULLPTR );
 
@@ -383,19 +388,19 @@ static js_node_t * __js_node_create_from_pool( js_document_t * _document, js_ele
     return node;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __js_string_destroy_inplace( js_allocator_t * _allocator, js_string_t * _string )
+static void __js_string_destroy_inplace( js_allocator_t * _allocator, js_element_string_t * _string )
 {
     _allocator->free( _string, _allocator->ud );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __js_string_destroy_allocator( js_allocator_t * _allocator, js_string_t * _string )
+static void __js_string_destroy_allocator( js_allocator_t * _allocator, js_element_string_t * _string )
 {
     _allocator->free( _string, _allocator->ud );
 }
 //////////////////////////////////////////////////////////////////////////
 static void __js_element_destroy( js_document_t * _document, js_element_t * _element );
-static void __js_array_destroy( js_document_t * _document, js_array_t * _array );
-static void __js_object_destroy( js_document_t * _document, js_object_t * _object );
+static void __js_array_destroy( js_document_t * _document, js_element_array_t * _array );
+static void __js_object_destroy( js_document_t * _document, js_element_object_t * _object );
 //////////////////////////////////////////////////////////////////////////
 static void __js_element_destroy( js_document_t * _document, js_element_t * _element )
 {
@@ -413,9 +418,9 @@ static void __js_element_destroy( js_document_t * _document, js_element_t * _ele
         }break;
     case js_type_integer:
         {
-            js_integer_t * integer = (js_integer_t *)_element;
+            js_element_integer_t * integer = (js_element_integer_t *)_element;
 
-            js_integer_value_t value = integer->value;
+            js_integer_t value = integer->value;
 
             if( value > -256 && value < 256 )
             {
@@ -428,9 +433,9 @@ static void __js_element_destroy( js_document_t * _document, js_element_t * _ele
         }break;
     case js_type_real:
         {
-            js_real_t * real = (js_real_t *)_element;
+            js_element_real_t * real = (js_element_real_t *)_element;
 
-            js_real_value_t value = real->value;
+            js_real_t value = real->value;
 
             if( value == 0.0 || value == 1.0 )
             {
@@ -443,26 +448,26 @@ static void __js_element_destroy( js_document_t * _document, js_element_t * _ele
         }break;
     case js_type_string:
         {
-            js_string_t * string = (js_string_t *)_element;
+            js_element_string_t * string = (js_element_string_t *)_element;
 
             _document->string_destroy( allocator, string );
         }break;
     case js_type_array:
         {
-            js_array_t * array = (js_array_t *)_element;
+            js_element_array_t * array = (js_element_array_t *)_element;
 
             __js_array_destroy( _document, array );
         }break;
     case js_type_object:
         {
-            js_object_t * object = (js_object_t *)_element;
+            js_element_object_t * object = (js_element_object_t *)_element;
 
             __js_object_destroy( _document, object );
         }break;
     }
 }
 //////////////////////////////////////////////////////////////////////////
-static void __js_array_destroy( js_document_t * _document, js_array_t * _array )
+static void __js_array_destroy( js_document_t * _document, js_element_array_t * _array )
 {
     js_node_t * it_node = _array->values;
 
@@ -480,7 +485,7 @@ static void __js_array_destroy( js_document_t * _document, js_array_t * _array )
     allocator->free( _array, allocator->ud );
 }
 //////////////////////////////////////////////////////////////////////////
-static void __js_object_destroy( js_document_t * _document, js_object_t * _object )
+static void __js_object_destroy( js_document_t * _document, js_element_object_t * _object )
 {
     js_node_t * it_key = _object->keys;
     js_node_t * it_value = _object->values;
@@ -568,7 +573,7 @@ static void __js_element_node_add( js_node_t ** _root, js_node_t * _node )
     (*_root) = _node;
 }
 //////////////////////////////////////////////////////////////////////////
-static js_result_t __js_object_add( js_document_t * _document, js_object_t * _object, js_string_t * _key, js_element_t * _value )
+static js_result_t __js_object_add( js_document_t * _document, js_element_object_t * _object, js_element_string_t * _key, js_element_t * _value )
 {
     ++_object->size;
 
@@ -586,7 +591,7 @@ static js_result_t __js_object_add( js_document_t * _document, js_object_t * _ob
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-static js_result_t __js_array_add( js_document_t * _document, js_array_t * _array, js_element_t * _value )
+static js_result_t __js_array_add( js_document_t * _document, js_element_array_t * _array, js_element_t * _value )
 {
     ++_array->size;
 
@@ -1054,8 +1059,8 @@ static js_bool_t __js_strzcmp( const char * _s1, js_size_t _z1, const char * _s2
 }
 //////////////////////////////////////////////////////////////////////////
 static js_result_t __js_parse_element( js_document_t * _document, const char ** _data, const char * _end, char _token, js_failed_fun_t _failed, void * _ud, js_element_t ** _element );
-static js_result_t __js_parse_array( js_document_t * _document, const char ** _data, const char * _end, js_failed_fun_t _failed, void * _ud, js_array_t * _array );
-static js_result_t __js_parse_object( js_document_t * _document, const char ** _data, const char * _end, js_failed_fun_t _failed, void * _ud, js_object_t * _object );
+static js_result_t __js_parse_array( js_document_t * _document, const char ** _data, const char * _end, js_failed_fun_t _failed, void * _ud, js_element_array_t * _array );
+static js_result_t __js_parse_object( js_document_t * _document, const char ** _data, const char * _end, js_failed_fun_t _failed, void * _ud, js_element_object_t * _object );
 //////////////////////////////////////////////////////////////////////////
 static js_result_t __js_parse_element( js_document_t * _document, const char ** _data, const char * _end, char _token, js_failed_fun_t _failed, void * _ud, js_element_t ** _element )
 {
@@ -1078,7 +1083,7 @@ static js_result_t __js_parse_element( js_document_t * _document, const char ** 
     {
         if( __js_strstr( data_begin, data_soa, "true" ) != JS_NULLPTR )
         {
-            js_true_t * t = __js_true_create( allocator );
+            js_element_true_t * t = __js_true_create( allocator );
 
             *_element = (js_element_t *)t;
 
@@ -1088,7 +1093,7 @@ static js_result_t __js_parse_element( js_document_t * _document, const char ** 
         }
         else if( __js_strstr( data_begin, data_soa, "false" ) != JS_NULLPTR )
         {
-            js_false_t * f = __js_false_create( allocator );
+            js_element_false_t * f = __js_false_create( allocator );
 
             *_element = (js_element_t *)f;
 
@@ -1098,7 +1103,7 @@ static js_result_t __js_parse_element( js_document_t * _document, const char ** 
         }
         else if( __js_strstr( data_begin, data_soa, "null" ) != JS_NULLPTR )
         {
-            js_null_t * null = __js_null_create( allocator );
+            js_element_null_t * null = __js_null_create( allocator );
 
             *_element = (js_element_t *)null;
 
@@ -1122,7 +1127,7 @@ static js_result_t __js_parse_element( js_document_t * _document, const char ** 
                     return JS_FAILURE;
                 }
 
-                js_integer_t * integer = __js_integer_create( allocator, value );
+                js_element_integer_t * integer = __js_integer_create( allocator, value );
 
                 JS_ALLOCATOR_MEMORY_CHECK( integer, JS_FAILURE );
 
@@ -1144,7 +1149,7 @@ static js_result_t __js_parse_element( js_document_t * _document, const char ** 
                     return JS_FAILURE;
                 }
 
-                js_real_t * real = __js_real_create( allocator, value );
+                js_element_real_t * real = __js_real_create( allocator, value );
 
                 JS_ALLOCATOR_MEMORY_CHECK( real, JS_FAILURE );
 
@@ -1169,7 +1174,7 @@ static js_result_t __js_parse_element( js_document_t * _document, const char ** 
 
         js_size_t data_size = data_eoa - data_soa;
 
-        js_string_t * string = _document->string_create( allocator, data_soa + 1, data_size - 1 );
+        js_element_string_t * string = _document->string_create( allocator, data_soa + 1, data_size - 1 );
 
         JS_ALLOCATOR_MEMORY_CHECK( string, JS_FAILURE );
 
@@ -1183,7 +1188,7 @@ static js_result_t __js_parse_element( js_document_t * _document, const char ** 
     {
         const char * data_iterator = data_soa;
 
-        js_object_t * object = __js_object_create( allocator );
+        js_element_object_t * object = __js_object_create( allocator );
 
         JS_ALLOCATOR_MEMORY_CHECK( object, JS_FAILURE );
 
@@ -1202,7 +1207,7 @@ static js_result_t __js_parse_element( js_document_t * _document, const char ** 
     {
         const char * data_iterator = data_soa;
 
-        js_array_t * array = __js_array_create( allocator );
+        js_element_array_t * array = __js_array_create( allocator );
 
         JS_ALLOCATOR_MEMORY_CHECK( array, JS_FAILURE );
 
@@ -1223,7 +1228,7 @@ static js_result_t __js_parse_element( js_document_t * _document, const char ** 
     return JS_FAILURE;
 }
 //////////////////////////////////////////////////////////////////////////
-static js_result_t __js_parse_array( js_document_t * _document, const char ** _data, const char * _end, js_failed_fun_t _failed, void * _ud, js_array_t * _array )
+static js_result_t __js_parse_array( js_document_t * _document, const char ** _data, const char * _end, js_failed_fun_t _failed, void * _ud, js_element_array_t * _array )
 {
     const char * data_begin = *_data;
 
@@ -1268,7 +1273,7 @@ static js_result_t __js_parse_array( js_document_t * _document, const char ** _d
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-static js_result_t __js_parse_object( js_document_t * _document, const char ** _data, const char * _end, js_failed_fun_t _failed, void * _ud, js_object_t * _object )
+static js_result_t __js_parse_object( js_document_t * _document, const char ** _data, const char * _end, js_failed_fun_t _failed, void * _ud, js_element_object_t * _object )
 {
     js_allocator_t * allocator = __js_document_allocator( _document );
 
@@ -1308,7 +1313,7 @@ static js_result_t __js_parse_object( js_document_t * _document, const char ** _
 
         js_size_t key_size = key_end - key_begin;
 
-        js_string_t * key = _document->string_create( allocator, key_begin + 1, key_size - 1 );
+        js_element_string_t * key = _document->string_create( allocator, key_begin + 1, key_size - 1 );
 
         JS_ALLOCATOR_MEMORY_CHECK( key, JS_FAILURE );
 
@@ -1442,7 +1447,7 @@ js_result_t js_parse( js_allocator_t _allocator, js_flags_e _flags, const char *
 
     JS_ALLOCATOR_MEMORY_CHECK( document, JS_FAILURE );
 
-    if( __js_parse_object( document, &data_iterator, data_end, _failed, _ud, (js_object_t *)document ) == JS_FAILURE )
+    if( __js_parse_object( document, &data_iterator, data_end, _failed, _ud, (js_element_object_t *)document ) == JS_FAILURE )
     {
         return JS_FAILURE;
     }
@@ -1453,8 +1458,8 @@ js_result_t js_parse( js_allocator_t _allocator, js_flags_e _flags, const char *
 }
 //////////////////////////////////////////////////////////////////////////
 static js_result_t __js_clone_element( js_document_t * _document, const js_element_t * _element, js_element_t ** _clone );
-static js_result_t __js_clone_array( js_document_t * _document, js_array_t * _clone, const js_array_t * _base );
-static js_result_t __js_clone_object( js_document_t * _document, js_object_t * _clone, const js_object_t * _base );
+static js_result_t __js_clone_array( js_document_t * _document, js_element_array_t * _clone, const js_element_array_t * _base );
+static js_result_t __js_clone_object( js_document_t * _document, js_element_object_t * _clone, const js_element_object_t * _base );
 //////////////////////////////////////////////////////////////////////////
 static js_result_t __js_clone_element( js_document_t * _document, const js_element_t * _element, js_element_t ** _clone )
 {
@@ -1466,7 +1471,7 @@ static js_result_t __js_clone_element( js_document_t * _document, const js_eleme
     {
     case js_type_null:
         {
-            js_null_t * null = __js_null_create( allocator );
+            js_element_null_t * null = __js_null_create( allocator );
 
             JS_ALLOCATOR_MEMORY_CHECK( null, JS_FAILURE );
 
@@ -1474,7 +1479,7 @@ static js_result_t __js_clone_element( js_document_t * _document, const js_eleme
         }break;
     case js_type_false:
         {
-            js_false_t * false_clone = __js_false_create( allocator );
+            js_element_false_t * false_clone = __js_false_create( allocator );
 
             JS_ALLOCATOR_MEMORY_CHECK( false_clone, JS_FAILURE );
 
@@ -1482,7 +1487,7 @@ static js_result_t __js_clone_element( js_document_t * _document, const js_eleme
         }break;
     case js_type_true:
         {
-            js_true_t * true_clone = __js_true_create( allocator );
+            js_element_true_t * true_clone = __js_true_create( allocator );
 
             JS_ALLOCATOR_MEMORY_CHECK( true_clone, JS_FAILURE );
 
@@ -1490,9 +1495,9 @@ static js_result_t __js_clone_element( js_document_t * _document, const js_eleme
         }break;
     case js_type_integer:
         {
-            js_integer_t * integer = (js_integer_t *)_element;
+            js_element_integer_t * integer = (js_element_integer_t *)_element;
 
-            js_integer_t * integer_clone = __js_integer_create( allocator, integer->value );
+            js_element_integer_t * integer_clone = __js_integer_create( allocator, integer->value );
 
             JS_ALLOCATOR_MEMORY_CHECK( integer_clone, JS_FAILURE );
 
@@ -1500,9 +1505,9 @@ static js_result_t __js_clone_element( js_document_t * _document, const js_eleme
         }break;
     case js_type_real:
         {
-            js_real_t * real = (js_real_t *)_element;
+            js_element_real_t * real = (js_element_real_t *)_element;
 
-            js_real_t * real_clone = __js_real_create( allocator, real->value );
+            js_element_real_t * real_clone = __js_real_create( allocator, real->value );
 
             JS_ALLOCATOR_MEMORY_CHECK( real_clone, JS_FAILURE );
 
@@ -1510,9 +1515,9 @@ static js_result_t __js_clone_element( js_document_t * _document, const js_eleme
         }break;
     case js_type_string:
         {
-            js_string_t * string = (js_string_t *)_element;
+            js_element_string_t * string = (js_element_string_t *)_element;
 
-            js_string_t * string_clone = _document->string_create( allocator, string->value, string->size );
+            js_element_string_t * string_clone = _document->string_create( allocator, string->value.value, string->value.size );
 
             JS_ALLOCATOR_MEMORY_CHECK( string_clone, JS_FAILURE );
 
@@ -1520,9 +1525,9 @@ static js_result_t __js_clone_element( js_document_t * _document, const js_eleme
         }break;
     case js_type_array:
         {
-            js_array_t * array = (js_array_t *)_element;
+            js_element_array_t * array = (js_element_array_t *)_element;
 
-            js_array_t * array_clone = __js_array_create( allocator );
+            js_element_array_t * array_clone = __js_array_create( allocator );
 
             JS_ALLOCATOR_MEMORY_CHECK( array_clone, JS_FAILURE );
 
@@ -1535,9 +1540,9 @@ static js_result_t __js_clone_element( js_document_t * _document, const js_eleme
         }break;
     case js_type_object:
         {
-            js_object_t * object = (js_object_t *)_element;
+            js_element_object_t * object = (js_element_object_t *)_element;
 
-            js_object_t * object_clone = __js_object_create( allocator );
+            js_element_object_t * object_clone = __js_object_create( allocator );
 
             JS_ALLOCATOR_MEMORY_CHECK( object_clone, JS_FAILURE );
 
@@ -1553,7 +1558,7 @@ static js_result_t __js_clone_element( js_document_t * _document, const js_eleme
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-static js_result_t __js_clone_array( js_document_t * _document, js_array_t * _clone, const js_array_t * _base )
+static js_result_t __js_clone_array( js_document_t * _document, js_element_array_t * _clone, const js_element_array_t * _base )
 {
     js_node_t * it_value = _base->values;
 
@@ -1576,7 +1581,7 @@ static js_result_t __js_clone_array( js_document_t * _document, js_array_t * _cl
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-static js_result_t __js_clone_object( js_document_t * _document, js_object_t * _clone, const js_object_t * _base )
+static js_result_t __js_clone_object( js_document_t * _document, js_element_object_t * _clone, const js_element_object_t * _base )
 {
     js_allocator_t * allocator = __js_document_allocator( _document );
 
@@ -1585,10 +1590,10 @@ static js_result_t __js_clone_object( js_document_t * _document, js_object_t * _
 
     for( ; it_key != JS_NULLPTR; it_key = it_key->next, it_value = it_value->next )
     {
-        const js_string_t * key = (const js_string_t *)it_key->element;
+        const js_element_string_t * key = (const js_element_string_t *)it_key->element;
         const js_element_t * value = it_value->element;
 
-        js_string_t * key_clone = _document->string_create( allocator, key->value, key->size );
+        js_element_string_t * key_clone = _document->string_create( allocator, key->value.value, key->value.size );
 
         JS_ALLOCATOR_MEMORY_CHECK( key_clone, JS_FAILURE );
 
@@ -1613,9 +1618,9 @@ js_result_t js_clone( js_allocator_t _allocator, js_flags_e _flags, const js_ele
 
     JS_ALLOCATOR_MEMORY_CHECK( document, JS_FAILURE );
 
-    const js_object_t * base = (const js_object_t *)_base;
+    const js_element_object_t * base = (const js_element_object_t *)_base;
 
-    if( __js_clone_object( document, (js_object_t *)document, base ) == JS_FAILURE )
+    if( __js_clone_object( document, (js_element_object_t *)document, base ) == JS_FAILURE )
     {
         return JS_FAILURE;
     }
@@ -1625,14 +1630,14 @@ js_result_t js_clone( js_allocator_t _allocator, js_flags_e _flags, const js_ele
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-static js_result_t __js_patch_object( js_document_t * _document, js_object_t * _object, const js_object_t * _patch )
+static js_result_t __js_patch_object( js_document_t * _document, js_element_object_t * _object, const js_element_object_t * _patch )
 {
     js_node_t * it_object_key = _object->keys;
     js_node_t * it_object_value = _object->values;
 
     for( ; it_object_key != JS_NULLPTR; it_object_key = it_object_key->next, it_object_value = it_object_value->next )
     {
-        const js_string_t * object_key = (const js_string_t *)it_object_key->element;
+        const js_element_string_t * object_key = (const js_element_string_t *)it_object_key->element;
         js_element_t * object_value = it_object_value->element;
 
         const js_node_t * it_patch_key = _patch->keys;
@@ -1640,10 +1645,10 @@ static js_result_t __js_patch_object( js_document_t * _document, js_object_t * _
 
         for( ; it_patch_key != JS_NULLPTR; it_patch_key = it_patch_key->next, it_patch_value = it_patch_value->next )
         {
-            const js_string_t * patch_key = (const js_string_t *)it_patch_key->element;
+            const js_element_string_t * patch_key = (const js_element_string_t *)it_patch_key->element;
             const js_element_t * patch_value = it_patch_value->element;
 
-            if( __js_strzcmp( object_key->value, object_key->size, patch_key->value, patch_key->size ) == JS_FALSE )
+            if( __js_strzcmp( object_key->value.value, object_key->value.size, patch_key->value.value, patch_key->value.size ) == JS_FALSE )
             {
                 continue;
             }
@@ -1653,7 +1658,7 @@ static js_result_t __js_patch_object( js_document_t * _document, js_object_t * _
 
             if( object_value_type == js_type_object && patch_value_type == js_type_object )
             {
-                if( __js_patch_object( _document, (js_object_t *)object_value, (const js_object_t *)patch_value ) == JS_FAILURE )
+                if( __js_patch_object( _document, (js_element_object_t *)object_value, (const js_element_object_t *)patch_value ) == JS_FAILURE )
                 {
                     return JS_FAILURE;
                 }
@@ -1715,15 +1720,15 @@ js_result_t js_patch( js_allocator_t _allocator, js_flags_e _flags, const js_ele
 
     JS_ALLOCATOR_MEMORY_CHECK( document, JS_FAILURE );
 
-    const js_object_t * base = (const js_object_t *)_base;
-    const js_object_t * patch = (const js_object_t *)_patch;
+    const js_element_object_t * base = (const js_element_object_t *)_base;
+    const js_element_object_t * patch = (const js_element_object_t *)_patch;
 
-    if( __js_clone_object( document, (js_object_t *)document, base ) == JS_FAILURE )
+    if( __js_clone_object( document, (js_element_object_t *)document, base ) == JS_FAILURE )
     {
         return JS_FAILURE;
     }
 
-    if( __js_patch_object( document, (js_object_t *)document, patch ) == JS_FAILURE )
+    if( __js_patch_object( document, (js_element_object_t *)document, patch ) == JS_FAILURE )
     {
         return JS_FAILURE;
     }
@@ -1832,35 +1837,34 @@ js_bool_t js_get_boolean( const js_element_t * _element )
     return JS_FALSE;
 }
 //////////////////////////////////////////////////////////////////////////
-js_integer_value_t js_get_integer( const js_element_t * _element )
+js_integer_t js_get_integer( const js_element_t * _element )
 {
-    js_integer_t * el = (js_integer_t *)_element;
+    js_element_integer_t * el = (js_element_integer_t *)_element;
 
-    js_integer_value_t value = el->value;
+    js_integer_t value = el->value;
 
     return value;
 }
 //////////////////////////////////////////////////////////////////////////
-js_real_value_t js_get_real( const js_element_t * _element )
+js_real_t js_get_real( const js_element_t * _element )
 {
-    js_real_t * el = (js_real_t *)_element;
+    js_element_real_t * el = (js_element_real_t *)_element;
 
-    js_real_value_t value = el->value;
+    js_real_t value = el->value;
 
     return value;
 }
 //////////////////////////////////////////////////////////////////////////
-void js_get_string( const js_element_t * _element, const char ** _value, js_size_t * const _size )
+void js_get_string( const js_element_t * _element, js_string_t * _value )
 {
-    js_string_t * el = (js_string_t *)_element;
+    js_element_string_t * el = (js_element_string_t *)_element;
 
     *_value = el->value;
-    *_size = el->size;
 }
 //////////////////////////////////////////////////////////////////////////
 js_size_t js_array_size( const js_element_t * _element )
 {
-    const js_array_t * array = (const js_array_t *)_element;
+    const js_element_array_t * array = (const js_element_array_t *)_element;
 
     js_size_t size = array->size;
 
@@ -1869,7 +1873,7 @@ js_size_t js_array_size( const js_element_t * _element )
 //////////////////////////////////////////////////////////////////////////
 const js_element_t * js_array_get( const js_element_t * _element, js_size_t _index )
 {
-    const js_array_t * array = (const js_array_t *)_element;
+    const js_element_array_t * array = (const js_element_array_t *)_element;
 
     const js_node_t * it = array->values;
 
@@ -1885,7 +1889,7 @@ const js_element_t * js_array_get( const js_element_t * _element, js_size_t _ind
 //////////////////////////////////////////////////////////////////////////
 js_size_t js_object_size( const js_element_t * _object )
 {
-    const js_object_t * object = (const js_object_t *)_object;
+    const js_element_object_t * object = (const js_element_object_t *)_object;
 
     js_size_t size = object->size;
 
@@ -1894,17 +1898,17 @@ js_size_t js_object_size( const js_element_t * _object )
 //////////////////////////////////////////////////////////////////////////
 const js_element_t * js_object_get( const js_element_t * _element, const char * _key )
 {
-    const js_object_t * object = (const js_object_t *)_element;
+    const js_element_object_t * object = (const js_element_object_t *)_element;
 
     const js_node_t * it_key = object->keys;
     const js_node_t * it_value = object->values;
 
     for( ; it_key != JS_NULLPTR; it_key = it_key->next, it_value = it_value->next )
     {
-        const js_string_t * key = (const js_string_t *)it_key->element;
+        const js_element_string_t * key = (const js_element_string_t *)it_key->element;
 
-        const char * key_value = key->value;
-        js_size_t key_size = key->size;
+        const char * key_value = key->value.value;
+        js_size_t key_size = key->value.size;
 
         if( __js_strncmp( _key, key_value, key_size ) == JS_FALSE )
         {
@@ -1921,17 +1925,17 @@ const js_element_t * js_object_get( const js_element_t * _element, const char * 
 //////////////////////////////////////////////////////////////////////////
 const js_element_t * js_object_getn( const js_element_t * _object, const char * _key, js_size_t _size )
 {
-    const js_object_t * object = (const js_object_t *)_object;
+    const js_element_object_t * object = (const js_element_object_t *)_object;
 
     const js_node_t * it_key = object->keys;
     const js_node_t * it_value = object->values;
 
     for( ; it_key != JS_NULLPTR; it_key = it_key->next, it_value = it_value->next )
     {
-        const js_string_t * key = (const js_string_t *)it_key->element;
+        const js_element_string_t * key = (const js_element_string_t *)it_key->element;
 
-        const char * key_value = key->value;
-        js_size_t key_size = key->size;
+        const char * key_value = key->value.value;
+        js_size_t key_size = key->value.size;
 
         if( __js_strzcmp( _key, _size, key_value, key_size ) == JS_FALSE )
         {
@@ -1948,7 +1952,7 @@ const js_element_t * js_object_getn( const js_element_t * _object, const char * 
 //////////////////////////////////////////////////////////////////////////
 js_result_t js_array_visit( const js_element_t * _element, js_array_visitor_fun_t _visitor, void * _ud )
 {
-    const js_array_t * array = (const js_array_t *)_element;
+    const js_element_array_t * array = (const js_element_array_t *)_element;
 
     const js_node_t * it_value = array->values;
 
@@ -1971,7 +1975,7 @@ js_result_t js_array_visit( const js_element_t * _element, js_array_visitor_fun_
 //////////////////////////////////////////////////////////////////////////
 js_result_t js_object_visit( const js_element_t * _element, js_object_visitor_fun_t _visitor, void * _ud )
 {
-    const js_object_t * object = (const js_object_t *)_element;
+    const js_element_object_t * object = (const js_element_object_t *)_element;
 
     const js_node_t * it_key = object->keys;
     const js_node_t * it_value = object->values;
@@ -1996,7 +2000,7 @@ js_result_t js_object_visit( const js_element_t * _element, js_object_visitor_fu
 //////////////////////////////////////////////////////////////////////////
 void js_array_foreach( const js_element_t * _element, js_array_foreach_fun_t _foreach, void * _ud )
 {
-    const js_array_t * array = (const js_array_t *)_element;
+    const js_element_array_t * array = (const js_element_array_t *)_element;
 
     const js_node_t * it_value = array->values;
 
@@ -2014,7 +2018,7 @@ void js_array_foreach( const js_element_t * _element, js_array_foreach_fun_t _fo
 //////////////////////////////////////////////////////////////////////////
 void js_object_foreach( const js_element_t * _element, js_object_foreach_fun_t _foreach, void * _ud )
 {
-    const js_object_t * object = (const js_object_t *)_element;
+    const js_element_object_t * object = (const js_element_object_t *)_element;
 
     const js_node_t * it_key = object->keys;
     const js_node_t * it_value = object->values;

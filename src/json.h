@@ -12,8 +12,14 @@ typedef uint8_t js_result_t;
 typedef uint8_t js_bool_t;
 typedef size_t js_size_t;
 
-typedef int64_t js_integer_value_t;
-typedef double js_real_value_t;
+typedef int64_t js_integer_t;
+typedef double js_real_t;
+
+typedef struct js_string_t
+{
+    const char * value;
+    js_size_t size;
+} js_string_t;
 
 #ifndef JS_SUCCESSFUL
 #define JS_SUCCESSFUL ((js_result_t)0)
@@ -115,9 +121,9 @@ js_bool_t js_is_array( const js_element_t * _element );
 js_bool_t js_is_object( const js_element_t * _element );
 
 js_bool_t js_get_boolean( const js_element_t * _element );
-js_integer_value_t js_get_integer( const js_element_t * _element );
-js_real_value_t js_get_real( const js_element_t * _element );
-void js_get_string( const js_element_t * _element, const char ** _value, js_size_t * const _size );
+js_integer_t js_get_integer( const js_element_t * _element );
+js_real_t js_get_real( const js_element_t * _element );
+void js_get_string( const js_element_t * _element, js_string_t * const _value );
 
 js_size_t js_array_size( const js_element_t * _element );
 const js_element_t * js_array_get( const js_element_t * _element, js_size_t _index );
