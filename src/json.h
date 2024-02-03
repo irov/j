@@ -65,12 +65,16 @@ typedef enum js_type_e
     js_type_object = 1 << 7,
 } js_type_e;
 
+typedef uint32_t js_type_t;
+
 typedef enum js_flags_e
 {
     js_flag_none = 0,
     js_flag_string_inplace = 1 << 0,
     js_flag_node_pool = 1 << 1,
 } js_flags_e;
+
+typedef uint32_t js_flags_t;
 
 typedef struct js_element_t js_element_t;
 
@@ -102,10 +106,10 @@ void js_make_allocator_default( js_alloc_fun_t _alloc, js_free_fun_t _free, void
 
 typedef void (*js_failed_fun_t)(const char * _pointer, const char * _end, const char * _message, void * _ud);
 
-js_result_t js_parse( js_allocator_t _allocator, js_flags_e _flags, const char * _data, js_size_t _size, js_failed_fun_t _failed, void * _ud, js_element_t ** _documet );
-js_result_t js_clone( js_allocator_t _allocator, js_flags_e _flags, const js_element_t * _base, js_element_t ** _total );
-js_result_t js_patch( js_allocator_t _allocator, js_flags_e _flags, const js_element_t * _base, const js_element_t * _patch, js_element_t ** _total );
-js_result_t js_create( js_allocator_t _allocator, js_flags_e _flags, js_element_t ** _documet );
+js_result_t js_parse( js_allocator_t _allocator, js_flags_t _flags, const char * _data, js_size_t _size, js_failed_fun_t _failed, void * _ud, js_element_t ** _documet );
+js_result_t js_clone( js_allocator_t _allocator, js_flags_t _flags, const js_element_t * _base, js_element_t ** _total );
+js_result_t js_patch( js_allocator_t _allocator, js_flags_t _flags, const js_element_t * _base, const js_element_t * _patch, js_element_t ** _total );
+js_result_t js_create( js_allocator_t _allocator, js_flags_t _flags, js_element_t ** _documet );
 
 js_result_t js_object_add_field_null( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize );
 js_result_t js_object_add_field_true( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize );
@@ -127,7 +131,7 @@ js_result_t js_array_push_object( js_element_t * _documet, js_element_t * _eleme
 
 void js_free( js_element_t * _element );
 
-js_type_e js_type( const js_element_t * _element );
+js_type_t js_type( const js_element_t * _element );
 
 js_bool_t js_is_null( const js_element_t * _element );
 js_bool_t js_is_false( const js_element_t * _element );

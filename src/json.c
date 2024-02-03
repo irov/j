@@ -22,7 +22,7 @@
 //////////////////////////////////////////////////////////////////////////
 typedef struct js_element_t
 {
-    js_type_e type;
+    js_type_t type;
 } js_element_t;
 //////////////////////////////////////////////////////////////////////////
 typedef struct js_element_null_t
@@ -98,7 +98,7 @@ typedef struct js_document_t
 {
     js_element_object_t object;
     js_allocator_t allocator;
-    js_flags_e flags;
+    js_flags_t flags;
 
     js_node_t * (*node_create)(struct js_document_t * _document, js_element_t * _element);
     void (*node_destroy)(struct js_document_t * _document, js_node_t * _node);
@@ -406,7 +406,7 @@ static void __js_element_destroy( js_document_t * _document, js_element_t * _ele
 {
     js_allocator_t * allocator = __js_document_allocator( _document );
 
-    js_type_e type = js_type( _element );
+    js_type_t type = js_type( _element );
 
     switch( type )
     {
@@ -525,7 +525,7 @@ static void __js_node_destroy_allocator( js_document_t * _document, js_node_t * 
     allocator->free( _node, allocator->ud );
 }
 //////////////////////////////////////////////////////////////////////////
-static js_document_t * __js_document_create( js_allocator_t _allocator, js_flags_e _flags )
+static js_document_t * __js_document_create( js_allocator_t _allocator, js_flags_t _flags )
 {
     js_document_t * document = (js_document_t *)_allocator.alloc( sizeof( js_document_t ), _allocator.ud );
 
@@ -1425,7 +1425,7 @@ void js_make_allocator_default( js_alloc_fun_t _alloc, js_free_fun_t _free, void
     _allocator->ud = ud;
 }
 //////////////////////////////////////////////////////////////////////////
-js_result_t js_parse( js_allocator_t _allocator, js_flags_e _flags, const char * _data, js_size_t _size, js_failed_fun_t _failed, void * _ud, js_element_t ** _element )
+js_result_t js_parse( js_allocator_t _allocator, js_flags_t _flags, const char * _data, js_size_t _size, js_failed_fun_t _failed, void * _ud, js_element_t ** _element )
 {
     const char * data_begin = _data;
     const char * data_end = _data + _size;
@@ -1466,7 +1466,7 @@ static js_result_t __js_clone_element( js_document_t * _document, const js_eleme
 {
     js_allocator_t * allocator = __js_document_allocator( _document );
 
-    js_type_e type = js_type( _element );
+    js_type_t type = js_type( _element );
 
     switch( type )
     {
@@ -1613,7 +1613,7 @@ static js_result_t __js_clone_object( js_document_t * _document, js_element_obje
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-js_result_t js_clone( js_allocator_t _allocator, js_flags_e _flags, const js_element_t * _base, js_element_t ** _total )
+js_result_t js_clone( js_allocator_t _allocator, js_flags_t _flags, const js_element_t * _base, js_element_t ** _total )
 {
     js_document_t * document = __js_document_create( _allocator, _flags );
 
@@ -1654,8 +1654,8 @@ static js_result_t __js_patch_object( js_document_t * _document, js_element_obje
                 continue;
             }
             
-            js_type_e object_value_type = js_type( object_value );
-            js_type_e patch_value_type = js_type( patch_value );
+            js_type_t object_value_type = js_type( object_value );
+            js_type_t patch_value_type = js_type( patch_value );
 
             if( object_value_type == js_type_object && patch_value_type == js_type_object )
             {
@@ -1715,7 +1715,7 @@ static js_result_t __js_patch_object( js_document_t * _document, js_element_obje
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-js_result_t js_patch( js_allocator_t _allocator, js_flags_e _flags, const js_element_t * _base, const js_element_t * _patch, js_element_t ** _total )
+js_result_t js_patch( js_allocator_t _allocator, js_flags_t _flags, const js_element_t * _base, const js_element_t * _patch, js_element_t ** _total )
 {
     js_document_t * document = __js_document_create( _allocator, _flags );
 
@@ -1739,7 +1739,7 @@ js_result_t js_patch( js_allocator_t _allocator, js_flags_e _flags, const js_ele
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-js_result_t js_create( js_allocator_t _allocator, js_flags_e _flags, js_element_t ** _element )
+js_result_t js_create( js_allocator_t _allocator, js_flags_t _flags, js_element_t ** _element )
 {
     js_document_t * document = __js_document_create( _allocator, _flags );
 
@@ -1752,7 +1752,7 @@ js_result_t js_create( js_allocator_t _allocator, js_flags_e _flags, js_element_
 //////////////////////////////////////////////////////////////////////////
 js_result_t js_object_add_field_null( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize )
 {
-    js_document_t * document = (js_document_t *)_element;
+    js_document_t * document = (js_document_t *)_documet;
 
     js_allocator_t * allocator = __js_document_allocator( document );
 
@@ -1770,7 +1770,7 @@ js_result_t js_object_add_field_null( js_element_t * _documet, js_element_t * _e
 //////////////////////////////////////////////////////////////////////////
 js_result_t js_object_add_field_true( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize )
 {
-    js_document_t * document = (js_document_t *)_element;
+    js_document_t * document = (js_document_t *)_documet;
 
     js_allocator_t * allocator = __js_document_allocator( document );
 
@@ -1788,7 +1788,7 @@ js_result_t js_object_add_field_true( js_element_t * _documet, js_element_t * _e
 //////////////////////////////////////////////////////////////////////////
 js_result_t js_object_add_field_false( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize )
 {
-    js_document_t * document = (js_document_t *)_element;
+    js_document_t * document = (js_document_t *)_documet;
 
     js_allocator_t * allocator = __js_document_allocator( document );
 
@@ -1806,7 +1806,7 @@ js_result_t js_object_add_field_false( js_element_t * _documet, js_element_t * _
 //////////////////////////////////////////////////////////////////////////
 js_result_t js_object_add_field_integer( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, js_integer_t _value )
 {
-    js_document_t * document = (js_document_t *)_element;
+    js_document_t * document = (js_document_t *)_documet;
 
     js_allocator_t * allocator = __js_document_allocator( document );
 
@@ -1824,7 +1824,7 @@ js_result_t js_object_add_field_integer( js_element_t * _documet, js_element_t *
 //////////////////////////////////////////////////////////////////////////
 js_result_t js_object_add_field_real( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, js_real_t _value )
 {
-    js_document_t * document = (js_document_t *)_element;
+    js_document_t * document = (js_document_t *)_documet;
 
     js_allocator_t * allocator = __js_document_allocator( document );
 
@@ -1842,7 +1842,7 @@ js_result_t js_object_add_field_real( js_element_t * _documet, js_element_t * _e
 //////////////////////////////////////////////////////////////////////////
 js_result_t js_object_add_field_string( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, const char * _value, size_t _valuesize )
 {
-    js_document_t * document = (js_document_t *)_element;
+    js_document_t * document = (js_document_t *)_documet;
 
     js_allocator_t * allocator = __js_document_allocator( document );
 
@@ -1860,7 +1860,7 @@ js_result_t js_object_add_field_string( js_element_t * _documet, js_element_t * 
 //////////////////////////////////////////////////////////////////////////
 js_result_t js_object_add_field_array( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, js_element_t ** _array )
 {
-    js_document_t * document = (js_document_t *)_element;
+    js_document_t * document = (js_document_t *)_documet;
 
     js_allocator_t * allocator = __js_document_allocator( document );
 
@@ -1880,7 +1880,7 @@ js_result_t js_object_add_field_array( js_element_t * _documet, js_element_t * _
 //////////////////////////////////////////////////////////////////////////
 js_result_t js_object_add_field_object( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, js_element_t ** _object )
 {
-    js_document_t * document = (js_document_t *)_element;
+    js_document_t * document = (js_document_t *)_documet;
 
     js_allocator_t * allocator = __js_document_allocator( document );
 
@@ -1900,7 +1900,7 @@ js_result_t js_object_add_field_object( js_element_t * _documet, js_element_t * 
 //////////////////////////////////////////////////////////////////////////
 js_result_t js_array_push_null( js_element_t * _documet, js_element_t * _element )
 {
-    js_document_t * document = (js_document_t *)_element;
+    js_document_t * document = (js_document_t *)_documet;
 
     js_allocator_t * allocator = __js_document_allocator( document );
 
@@ -1918,7 +1918,7 @@ js_result_t js_array_push_null( js_element_t * _documet, js_element_t * _element
 //////////////////////////////////////////////////////////////////////////
 js_result_t js_array_push_true( js_element_t * _documet, js_element_t * _element )
 {
-    js_document_t * document = (js_document_t *)_element;
+    js_document_t * document = (js_document_t *)_documet;
 
     js_allocator_t * allocator = __js_document_allocator( document );
 
@@ -1936,7 +1936,7 @@ js_result_t js_array_push_true( js_element_t * _documet, js_element_t * _element
 //////////////////////////////////////////////////////////////////////////
 js_result_t js_array_push_false( js_element_t * _documet, js_element_t * _element )
 {
-    js_document_t * document = (js_document_t *)_element;
+    js_document_t * document = (js_document_t *)_documet;
 
     js_allocator_t * allocator = __js_document_allocator( document );
 
@@ -1954,7 +1954,7 @@ js_result_t js_array_push_false( js_element_t * _documet, js_element_t * _elemen
 //////////////////////////////////////////////////////////////////////////
 js_result_t js_array_push_integer( js_element_t * _documet, js_element_t * _element, js_integer_t _value )
 {
-    js_document_t * document = (js_document_t *)_element;
+    js_document_t * document = (js_document_t *)_documet;
 
     js_allocator_t * allocator = __js_document_allocator( document );
 
@@ -1972,7 +1972,7 @@ js_result_t js_array_push_integer( js_element_t * _documet, js_element_t * _elem
 //////////////////////////////////////////////////////////////////////////
 js_result_t js_array_push_real( js_element_t * _documet, js_element_t * _element, js_real_t _value )
 {
-    js_document_t * document = (js_document_t *)_element;
+    js_document_t * document = (js_document_t *)_documet;
 
     js_allocator_t * allocator = __js_document_allocator( document );
 
@@ -1990,7 +1990,7 @@ js_result_t js_array_push_real( js_element_t * _documet, js_element_t * _element
 //////////////////////////////////////////////////////////////////////////
 js_result_t js_array_push_string( js_element_t * _documet, js_element_t * _element, const char * _value, size_t _valuesize )
 {
-    js_document_t * document = (js_document_t *)_element;
+    js_document_t * document = (js_document_t *)_documet;
 
     js_allocator_t * allocator = __js_document_allocator( document );
 
@@ -2008,7 +2008,7 @@ js_result_t js_array_push_string( js_element_t * _documet, js_element_t * _eleme
 //////////////////////////////////////////////////////////////////////////
 js_result_t js_array_push_array( js_element_t * _documet, js_element_t * _element, js_element_t ** _array )
 {
-    js_document_t * document = (js_document_t *)_element;
+    js_document_t * document = (js_document_t *)_documet;
 
     js_allocator_t * allocator = __js_document_allocator( document );
 
@@ -2028,7 +2028,7 @@ js_result_t js_array_push_array( js_element_t * _documet, js_element_t * _elemen
 //////////////////////////////////////////////////////////////////////////
 js_result_t js_array_push_object( js_element_t * _documet, js_element_t * _element, js_element_t ** _object )
 {
-    js_document_t * document = (js_document_t *)_element;
+    js_document_t * document = (js_document_t *)_documet;
 
     js_allocator_t * allocator = __js_document_allocator( document );
 
@@ -2067,7 +2067,7 @@ void js_free( js_element_t * _element )
 
     js_allocator_t * allocator = __js_document_allocator( document );
 
-    js_flags_e flags = document->flags;
+    js_flags_t flags = document->flags;
 
     if( flags & js_flag_node_pool )
     {
@@ -2083,9 +2083,9 @@ void js_free( js_element_t * _element )
     allocator->free( document, allocator->ud );
 }
 //////////////////////////////////////////////////////////////////////////
-js_type_e js_type( const js_element_t * _element )
+js_type_t js_type( const js_element_t * _element )
 {
-    js_type_e type = _element->type;
+    js_type_t type = _element->type;
 
     return type;
 }

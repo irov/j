@@ -250,7 +250,7 @@ static void __js_dump_object( js_dump_ctx_t * _ctx, const js_element_t * _elemen
 //////////////////////////////////////////////////////////////////////////
 static void __js_dump_element( js_dump_ctx_t * _ctx, const js_element_t * _element )
 {
-    js_type_e type = js_type( _element );
+    js_type_t type = js_type( _element );
 
     switch( type )
     {

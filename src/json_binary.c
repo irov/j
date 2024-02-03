@@ -159,7 +159,7 @@ static void __binary_write_object( js_binary_ctx_t * _ctx, const js_element_t * 
 //////////////////////////////////////////////////////////////////////////
 static void __binary_write_element( js_binary_ctx_t * _ctx, const js_element_t * _element )
 {
-    js_type_e type = js_type( _element );
+    js_type_t type = js_type( _element );
 
     switch( type )
     {
