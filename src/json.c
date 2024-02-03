@@ -591,6 +591,17 @@ static js_result_t __js_object_add( js_document_t * _document, js_element_object
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
+static js_result_t __js_object_add_string( js_document_t * _document, js_element_object_t * _object, const char * _key, size_t _size, js_element_t * _value )
+{
+    js_element_string_t * key = _document->string_create( __js_document_allocator( _document ), _key, _size );
+
+    JS_ALLOCATOR_MEMORY_CHECK( key, JS_FAILURE );
+
+    js_result_t result = __js_object_add( _document, _object, key, _value );
+
+    return result;
+}
+//////////////////////////////////////////////////////////////////////////
 static js_result_t __js_array_add( js_document_t * _document, js_element_array_t * _array, js_element_t * _value )
 {
     ++_array->size;
@@ -609,22 +620,12 @@ static js_result_t __js_array_add( js_document_t * _document, js_element_array_t
 //////////////////////////////////////////////////////////////////////////
 static js_bool_t __js_isspace( char c )
 {
-    if( c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f' )
-    {
-        return JS_TRUE;
-    }
-
-    return JS_FALSE;
+    return (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f');
 }
 //////////////////////////////////////////////////////////////////////////
 static js_bool_t __js_isdigit( char c )
 {
-    if( c >= '0' && c <= '9' )
-    {
-        return JS_TRUE;
-    }
-
-    return JS_FALSE;
+    return (c >= '0' && c <= '9');
 }
 //////////////////////////////////////////////////////////////////////////
 #define JS_STRTOLL_INCREASE_EOF() ++s; if( s == _end ) { *_it = _in; return 0; }
@@ -1734,6 +1735,313 @@ js_result_t js_patch( js_allocator_t _allocator, js_flags_e _flags, const js_ele
     }
 
     *_total = (js_element_t *)document;
+
+    return JS_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_create( js_allocator_t _allocator, js_flags_e _flags, js_element_t ** _element )
+{
+    js_document_t * document = __js_document_create( _allocator, _flags );
+
+    JS_ALLOCATOR_MEMORY_CHECK( document, JS_FAILURE );
+
+    *_element = (js_element_t *)document;
+
+    return JS_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_object_add_field_null( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize )
+{
+    js_document_t * document = (js_document_t *)_element;
+
+    js_allocator_t * allocator = __js_document_allocator( document );
+
+    js_element_null_t * value = __js_null_create( allocator );
+
+    JS_ALLOCATOR_MEMORY_CHECK( value, JS_FAILURE );
+
+    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, _keysize, (js_element_t *)value ) == JS_FAILURE )
+    {
+        return JS_FAILURE;
+    }
+
+    return JS_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_object_add_field_true( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize )
+{
+    js_document_t * document = (js_document_t *)_element;
+
+    js_allocator_t * allocator = __js_document_allocator( document );
+
+    js_element_true_t * value = __js_true_create( allocator );
+
+    JS_ALLOCATOR_MEMORY_CHECK( value, JS_FAILURE );
+
+    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, _keysize, (js_element_t *)value ) == JS_FAILURE )
+    {
+        return JS_FAILURE;
+    }
+
+    return JS_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_object_add_field_false( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize )
+{
+    js_document_t * document = (js_document_t *)_element;
+
+    js_allocator_t * allocator = __js_document_allocator( document );
+
+    js_element_false_t * value = __js_false_create( allocator );
+
+    JS_ALLOCATOR_MEMORY_CHECK( value, JS_FAILURE );
+
+    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, _keysize, (js_element_t *)value ) == JS_FAILURE )
+    {
+        return JS_FAILURE;
+    }
+
+    return JS_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_object_add_field_integer( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, js_integer_t _value )
+{
+    js_document_t * document = (js_document_t *)_element;
+
+    js_allocator_t * allocator = __js_document_allocator( document );
+
+    js_element_integer_t * value = __js_integer_create( allocator, _value );
+
+    JS_ALLOCATOR_MEMORY_CHECK( value, JS_FAILURE );
+
+    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, _keysize, (js_element_t *)value ) == JS_FAILURE )
+    {
+        return JS_FAILURE;
+    }
+
+    return JS_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_object_add_field_real( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, js_real_t _value )
+{
+    js_document_t * document = (js_document_t *)_element;
+
+    js_allocator_t * allocator = __js_document_allocator( document );
+
+    js_element_real_t * value = __js_real_create( allocator, _value );
+
+    JS_ALLOCATOR_MEMORY_CHECK( value, JS_FAILURE );
+
+    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, _keysize, (js_element_t *)value ) == JS_FAILURE )
+    {
+        return JS_FAILURE;
+    }
+
+    return JS_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_object_add_field_string( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, const char * _value, size_t _valuesize )
+{
+    js_document_t * document = (js_document_t *)_element;
+
+    js_allocator_t * allocator = __js_document_allocator( document );
+
+    js_element_string_t * value = document->string_create( allocator, _value, _valuesize );
+
+    JS_ALLOCATOR_MEMORY_CHECK( value, JS_FAILURE );
+
+    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, _keysize, (js_element_t *)value ) == JS_FAILURE )
+    {
+        return JS_FAILURE;
+    }
+
+    return JS_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_object_add_field_array( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, js_element_t ** _array )
+{
+    js_document_t * document = (js_document_t *)_element;
+
+    js_allocator_t * allocator = __js_document_allocator( document );
+
+    js_element_array_t * array = __js_array_create( allocator );
+
+    JS_ALLOCATOR_MEMORY_CHECK( array, JS_FAILURE );
+
+    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, _keysize, (js_element_t *)array ) == JS_FAILURE )
+    {
+        return JS_FAILURE;
+    }
+
+    *_array = (js_element_t *)array;
+
+    return JS_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_object_add_field_object( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, js_element_t ** _object )
+{
+    js_document_t * document = (js_document_t *)_element;
+
+    js_allocator_t * allocator = __js_document_allocator( document );
+
+    js_element_object_t * object = __js_object_create( allocator );
+
+    JS_ALLOCATOR_MEMORY_CHECK( object, JS_FAILURE );
+
+    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, _keysize, (js_element_t *)object ) == JS_FAILURE )
+    {
+        return JS_FAILURE;
+    }
+
+    *_object = (js_element_t *)object;
+
+    return JS_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_array_push_null( js_element_t * _documet, js_element_t * _element )
+{
+    js_document_t * document = (js_document_t *)_element;
+
+    js_allocator_t * allocator = __js_document_allocator( document );
+
+    js_element_null_t * value = __js_null_create( allocator );
+
+    JS_ALLOCATOR_MEMORY_CHECK( value, JS_FAILURE );
+
+    if( __js_array_add( document, (js_element_array_t *)_element, (js_element_t *)value ) == JS_FAILURE )
+    {
+        return JS_FAILURE;
+    }
+
+    return JS_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_array_push_true( js_element_t * _documet, js_element_t * _element )
+{
+    js_document_t * document = (js_document_t *)_element;
+
+    js_allocator_t * allocator = __js_document_allocator( document );
+
+    js_element_true_t * value = __js_true_create( allocator );
+
+    JS_ALLOCATOR_MEMORY_CHECK( value, JS_FAILURE );
+
+    if( __js_array_add( document, (js_element_array_t *)_element, (js_element_t *)value ) == JS_FAILURE )
+    {
+        return JS_FAILURE;
+    }
+
+    return JS_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_array_push_false( js_element_t * _documet, js_element_t * _element )
+{
+    js_document_t * document = (js_document_t *)_element;
+
+    js_allocator_t * allocator = __js_document_allocator( document );
+
+    js_element_false_t * value = __js_false_create( allocator );
+
+    JS_ALLOCATOR_MEMORY_CHECK( value, JS_FAILURE );
+
+    if( __js_array_add( document, (js_element_array_t *)_element, (js_element_t *)value ) == JS_FAILURE )
+    {
+        return JS_FAILURE;
+    }
+
+    return JS_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_array_push_integer( js_element_t * _documet, js_element_t * _element, js_integer_t _value )
+{
+    js_document_t * document = (js_document_t *)_element;
+
+    js_allocator_t * allocator = __js_document_allocator( document );
+
+    js_element_integer_t * value = __js_integer_create( allocator, _value );
+
+    JS_ALLOCATOR_MEMORY_CHECK( value, JS_FAILURE );
+
+    if( __js_array_add( document, (js_element_array_t *)_element, (js_element_t *)value ) == JS_FAILURE )
+    {
+        return JS_FAILURE;
+    }
+
+    return JS_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_array_push_real( js_element_t * _documet, js_element_t * _element, js_real_t _value )
+{
+    js_document_t * document = (js_document_t *)_element;
+
+    js_allocator_t * allocator = __js_document_allocator( document );
+
+    js_element_real_t * value = __js_real_create( allocator, _value );
+
+    JS_ALLOCATOR_MEMORY_CHECK( value, JS_FAILURE );
+
+    if( __js_array_add( document, (js_element_array_t *)_element, (js_element_t *)value ) == JS_FAILURE )
+    {
+        return JS_FAILURE;
+    }
+
+    return JS_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_array_push_string( js_element_t * _documet, js_element_t * _element, const char * _value, size_t _valuesize )
+{
+    js_document_t * document = (js_document_t *)_element;
+
+    js_allocator_t * allocator = __js_document_allocator( document );
+
+    js_element_string_t * value = document->string_create( allocator, _value, _valuesize );
+
+    JS_ALLOCATOR_MEMORY_CHECK( value, JS_FAILURE );
+
+    if( __js_array_add( document, (js_element_array_t *)_element, (js_element_t *)value ) == JS_FAILURE )
+    {
+        return JS_FAILURE;
+    }
+
+    return JS_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_array_push_array( js_element_t * _documet, js_element_t * _element, js_element_t ** _array )
+{
+    js_document_t * document = (js_document_t *)_element;
+
+    js_allocator_t * allocator = __js_document_allocator( document );
+
+    js_element_array_t * array = __js_array_create( allocator );
+
+    JS_ALLOCATOR_MEMORY_CHECK( array, JS_FAILURE );
+
+    if( __js_array_add( document, (js_element_array_t *)_element, (js_element_t *)array ) == JS_FAILURE )
+    {
+        return JS_FAILURE;
+    }
+
+    *_array = (js_element_t *)array;
+
+    return JS_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_array_push_object( js_element_t * _documet, js_element_t * _element, js_element_t ** _object )
+{
+    js_document_t * document = (js_document_t *)_element;
+
+    js_allocator_t * allocator = __js_document_allocator( document );
+
+    js_element_object_t * object = __js_object_create( allocator );
+
+    JS_ALLOCATOR_MEMORY_CHECK( object, JS_FAILURE );
+
+    if( __js_array_add( document, (js_element_array_t *)_element, (js_element_t *)object ) == JS_FAILURE )
+    {
+        return JS_FAILURE;
+    }
+
+    *_object = (js_element_t *)object;
 
     return JS_SUCCESSFUL;
 }
