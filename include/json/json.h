@@ -53,10 +53,6 @@ typedef struct js_string_t
 #define JS_MAKE_STRING(S, Z) { S, Z }
 #endif
 
-#ifndef JS_STD_STRING
-#define JS_STD_STRING(S) { S.c_str(), S.size() }
-#endif
-
 #ifndef JS_ALLOCATOR_MEMORY_CHECK_ENABLE
 #   ifndef NDEBUG
 #       define JS_ALLOCATOR_MEMORY_CHECK_ENABLE 1
