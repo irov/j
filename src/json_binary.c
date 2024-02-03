@@ -103,6 +103,8 @@ static void __binary_write_string( js_binary_ctx_t * _ctx, const js_element_t * 
 //////////////////////////////////////////////////////////////////////////
 static void __binary_write_array_foreach( js_size_t _index, const js_element_t * _value, void * _ud )
 {
+    JS_UNUSED( _index );
+
     js_binary_ctx_t * ctx = (js_binary_ctx_t *)_ud;
 
     __binary_write_element( ctx, _value );
@@ -128,6 +130,8 @@ static void __binary_write_array( js_binary_ctx_t * _ctx, const js_element_t * _
 //////////////////////////////////////////////////////////////////////////
 static void __binary_write_object_foreach( js_size_t _index, const js_element_t * _key, const js_element_t * _value, void * _ud )
 {
+    JS_UNUSED( _index );
+
     js_binary_ctx_t * ctx = (js_binary_ctx_t *)_ud;
 
     __binary_write_string( ctx, _key );
