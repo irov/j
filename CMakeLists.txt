@@ -4,9 +4,22 @@ OPTION(JSON_TEST "JSON_TEST" OFF)
 
 project(json)
 
-SET(JSON_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/json/json.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/json.c
 
-add_subdirectory(src)
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/json/json_dump.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/json_dump.c
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/json/json_binary.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/json_binary.c
+)
+
+SOURCE_GROUP(json FILES ${SOURCES})
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/json)
+
+add_library(${PROJECT_NAME} STATIC ${SOURCES})
 
 if(JSON_TEST)
     include(CTest)
