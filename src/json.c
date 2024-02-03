@@ -102,7 +102,7 @@ typedef struct js_document_t
 
     js_node_t * (*node_create)(struct js_document_t * _document, js_element_t * _element);
     void (*node_destroy)(struct js_document_t * _document, js_node_t * _node);
-    js_element_string_t * (*string_create)(js_allocator_t * _allocator, const char * _value, size_t _size);
+    js_element_string_t * (*string_create)(js_allocator_t * _allocator, js_string_t _value);
     void (*string_destroy)(js_allocator_t * _allocator, js_element_string_t * _string);
 
     js_node_t * free_node;
@@ -255,21 +255,24 @@ static js_element_real_t * __js_real_create( js_allocator_t * _allocator, js_rea
     return real;
 }
 //////////////////////////////////////////////////////////////////////////
-static js_element_string_t * __js_string_create_allocator( js_allocator_t * _allocator, const char * _value, size_t _size )
+static js_element_string_t * __js_string_create_allocator( js_allocator_t * _allocator, js_string_t _value )
 {
-    js_element_string_buffer_t * string_buffer = JS_ALLOCATOR_NEW_EX( _allocator, js_element_string_buffer_t, _size );
+    const char * value_str = _value.value;
+    js_size_t value_size = _value.size;
+
+    js_element_string_buffer_t * string_buffer = JS_ALLOCATOR_NEW_EX( _allocator, js_element_string_buffer_t, value_size );
 
     JS_ALLOCATOR_MEMORY_CHECK( string_buffer, JS_NULLPTR );
 
     string_buffer->base.base.type = js_type_string;
 
     string_buffer->base.value.value = string_buffer->buffer;
-    string_buffer->base.value.size = _size;
+    string_buffer->base.value.size = value_size;
 
     char * it_buffer = string_buffer->buffer;
 
-    for( const char * it_value = _value,
-        *it_value_end = _value + _size;
+    for( const char * it_value = value_str,
+        *it_value_end = value_str + value_size;
         it_value != it_value_end; ++it_value )
     {
         char c = *it_value;
@@ -282,7 +285,7 @@ static js_element_string_t * __js_string_create_allocator( js_allocator_t * _all
     return string;
 }
 //////////////////////////////////////////////////////////////////////////
-static js_element_string_t * __js_string_create_inplace( js_allocator_t * _allocator, const char * _value, size_t _size )
+static js_element_string_t * __js_string_create_inplace( js_allocator_t * _allocator, js_string_t _value )
 {
     js_element_string_t * string = JS_ALLOCATOR_NEW( _allocator, js_element_string_t );
 
@@ -290,8 +293,7 @@ static js_element_string_t * __js_string_create_inplace( js_allocator_t * _alloc
 
     string->base.type = js_type_string;
 
-    string->value.value = _value;
-    string->value.size = _size;
+    string->value = _value;
 
     return string;
 }
@@ -591,9 +593,9 @@ static js_result_t __js_object_add( js_document_t * _document, js_element_object
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-static js_result_t __js_object_add_string( js_document_t * _document, js_element_object_t * _object, const char * _key, size_t _size, js_element_t * _value )
+static js_result_t __js_object_add_string( js_document_t * _document, js_element_object_t * _object, js_string_t _key, js_element_t * _value )
 {
-    js_element_string_t * key = _document->string_create( __js_document_allocator( _document ), _key, _size );
+    js_element_string_t * key = _document->string_create( __js_document_allocator( _document ), _key );
 
     JS_ALLOCATOR_MEMORY_CHECK( key, JS_FAILURE );
 
@@ -1041,16 +1043,16 @@ static js_bool_t __js_strncmp( const char * _s1, const char * _s2, js_size_t _n 
     return JS_TRUE;
 }
 //////////////////////////////////////////////////////////////////////////
-static js_bool_t __js_strzcmp( const char * _s1, js_size_t _z1, const char * _s2, js_size_t _z2 )
+static js_bool_t __js_strzcmp( js_string_t _s1, js_string_t _s2 )
 {
-    if( _z1 != _z2 )
+    if( _s1.size != _s2.size )
     {
         return JS_FALSE;
     }
 
-    for( js_size_t index = 0; index != _z1; ++index )
+    for( js_size_t index = 0; index != _s1.size; ++index )
     {
-        if( _s1[index] != _s2[index] )
+        if( _s1.value[index] != _s2.value[index] )
         {
             return JS_FALSE;
         }
@@ -1175,7 +1177,9 @@ static js_result_t __js_parse_element( js_document_t * _document, const char ** 
 
         js_size_t data_size = data_eoa - data_soa;
 
-        js_element_string_t * string = _document->string_create( allocator, data_soa + 1, data_size - 1 );
+        js_string_t data_string = {data_soa + 1, data_size - 1};
+
+        js_element_string_t * string = _document->string_create( allocator, data_string );
 
         JS_ALLOCATOR_MEMORY_CHECK( string, JS_FAILURE );
 
@@ -1314,7 +1318,9 @@ static js_result_t __js_parse_object( js_document_t * _document, const char ** _
 
         js_size_t key_size = key_end - key_begin;
 
-        js_element_string_t * key = _document->string_create( allocator, key_begin + 1, key_size - 1 );
+        js_string_t key_string = {key_begin + 1, key_size - 1};
+
+        js_element_string_t * key = _document->string_create( allocator, key_string );
 
         JS_ALLOCATOR_MEMORY_CHECK( key, JS_FAILURE );
 
@@ -1518,7 +1524,7 @@ static js_result_t __js_clone_element( js_document_t * _document, const js_eleme
         {
             js_element_string_t * string = (js_element_string_t *)_element;
 
-            js_element_string_t * string_clone = _document->string_create( allocator, string->value.value, string->value.size );
+            js_element_string_t * string_clone = _document->string_create( allocator, string->value );
 
             JS_ALLOCATOR_MEMORY_CHECK( string_clone, JS_FAILURE );
 
@@ -1594,7 +1600,7 @@ static js_result_t __js_clone_object( js_document_t * _document, js_element_obje
         const js_element_string_t * key = (const js_element_string_t *)it_key->element;
         const js_element_t * value = it_value->element;
 
-        js_element_string_t * key_clone = _document->string_create( allocator, key->value.value, key->value.size );
+        js_element_string_t * key_clone = _document->string_create( allocator, key->value );
 
         JS_ALLOCATOR_MEMORY_CHECK( key_clone, JS_FAILURE );
 
@@ -1649,7 +1655,7 @@ static js_result_t __js_patch_object( js_document_t * _document, js_element_obje
             const js_element_string_t * patch_key = (const js_element_string_t *)it_patch_key->element;
             const js_element_t * patch_value = it_patch_value->element;
 
-            if( __js_strzcmp( object_key->value.value, object_key->value.size, patch_key->value.value, patch_key->value.size ) == JS_FALSE )
+            if( __js_strzcmp( object_key->value, patch_key->value ) == JS_FALSE )
             {
                 continue;
             }
@@ -1750,7 +1756,7 @@ js_result_t js_create( js_allocator_t _allocator, js_flags_t _flags, js_element_
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-js_result_t js_object_add_field_null( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize )
+js_result_t js_object_add_field_null( js_element_t * _documet, js_element_t * _element, js_string_t _key )
 {
     js_document_t * document = (js_document_t *)_documet;
 
@@ -1760,7 +1766,7 @@ js_result_t js_object_add_field_null( js_element_t * _documet, js_element_t * _e
 
     JS_ALLOCATOR_MEMORY_CHECK( value, JS_FAILURE );
 
-    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, _keysize, (js_element_t *)value ) == JS_FAILURE )
+    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, (js_element_t *)value ) == JS_FAILURE )
     {
         return JS_FAILURE;
     }
@@ -1768,7 +1774,7 @@ js_result_t js_object_add_field_null( js_element_t * _documet, js_element_t * _e
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-js_result_t js_object_add_field_true( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize )
+js_result_t js_object_add_field_true( js_element_t * _documet, js_element_t * _element, js_string_t _key )
 {
     js_document_t * document = (js_document_t *)_documet;
 
@@ -1778,7 +1784,7 @@ js_result_t js_object_add_field_true( js_element_t * _documet, js_element_t * _e
 
     JS_ALLOCATOR_MEMORY_CHECK( value, JS_FAILURE );
 
-    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, _keysize, (js_element_t *)value ) == JS_FAILURE )
+    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, (js_element_t *)value ) == JS_FAILURE )
     {
         return JS_FAILURE;
     }
@@ -1786,7 +1792,7 @@ js_result_t js_object_add_field_true( js_element_t * _documet, js_element_t * _e
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-js_result_t js_object_add_field_false( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize )
+js_result_t js_object_add_field_false( js_element_t * _documet, js_element_t * _element, js_string_t _key )
 {
     js_document_t * document = (js_document_t *)_documet;
 
@@ -1796,7 +1802,7 @@ js_result_t js_object_add_field_false( js_element_t * _documet, js_element_t * _
 
     JS_ALLOCATOR_MEMORY_CHECK( value, JS_FAILURE );
 
-    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, _keysize, (js_element_t *)value ) == JS_FAILURE )
+    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, (js_element_t *)value ) == JS_FAILURE )
     {
         return JS_FAILURE;
     }
@@ -1804,7 +1810,7 @@ js_result_t js_object_add_field_false( js_element_t * _documet, js_element_t * _
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-js_result_t js_object_add_field_integer( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, js_integer_t _value )
+js_result_t js_object_add_field_integer( js_element_t * _documet, js_element_t * _element, js_string_t _key, js_integer_t _value )
 {
     js_document_t * document = (js_document_t *)_documet;
 
@@ -1814,7 +1820,7 @@ js_result_t js_object_add_field_integer( js_element_t * _documet, js_element_t *
 
     JS_ALLOCATOR_MEMORY_CHECK( value, JS_FAILURE );
 
-    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, _keysize, (js_element_t *)value ) == JS_FAILURE )
+    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, (js_element_t *)value ) == JS_FAILURE )
     {
         return JS_FAILURE;
     }
@@ -1822,7 +1828,7 @@ js_result_t js_object_add_field_integer( js_element_t * _documet, js_element_t *
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-js_result_t js_object_add_field_real( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, js_real_t _value )
+js_result_t js_object_add_field_real( js_element_t * _documet, js_element_t * _element, js_string_t _key, js_real_t _value )
 {
     js_document_t * document = (js_document_t *)_documet;
 
@@ -1832,7 +1838,7 @@ js_result_t js_object_add_field_real( js_element_t * _documet, js_element_t * _e
 
     JS_ALLOCATOR_MEMORY_CHECK( value, JS_FAILURE );
 
-    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, _keysize, (js_element_t *)value ) == JS_FAILURE )
+    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, (js_element_t *)value ) == JS_FAILURE )
     {
         return JS_FAILURE;
     }
@@ -1840,17 +1846,17 @@ js_result_t js_object_add_field_real( js_element_t * _documet, js_element_t * _e
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-js_result_t js_object_add_field_string( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, const char * _value, size_t _valuesize )
+js_result_t js_object_add_field_string( js_element_t * _documet, js_element_t * _element, js_string_t _key, js_string_t _value )
 {
     js_document_t * document = (js_document_t *)_documet;
 
     js_allocator_t * allocator = __js_document_allocator( document );
 
-    js_element_string_t * value = document->string_create( allocator, _value, _valuesize );
+    js_element_string_t * value = document->string_create( allocator, _value );
 
     JS_ALLOCATOR_MEMORY_CHECK( value, JS_FAILURE );
 
-    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, _keysize, (js_element_t *)value ) == JS_FAILURE )
+    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, (js_element_t *)value ) == JS_FAILURE )
     {
         return JS_FAILURE;
     }
@@ -1858,7 +1864,7 @@ js_result_t js_object_add_field_string( js_element_t * _documet, js_element_t * 
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-js_result_t js_object_add_field_array( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, js_element_t ** _array )
+js_result_t js_object_add_field_array( js_element_t * _documet, js_element_t * _element, js_string_t _key, js_element_t ** _array )
 {
     js_document_t * document = (js_document_t *)_documet;
 
@@ -1868,7 +1874,7 @@ js_result_t js_object_add_field_array( js_element_t * _documet, js_element_t * _
 
     JS_ALLOCATOR_MEMORY_CHECK( array, JS_FAILURE );
 
-    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, _keysize, (js_element_t *)array ) == JS_FAILURE )
+    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, (js_element_t *)array ) == JS_FAILURE )
     {
         return JS_FAILURE;
     }
@@ -1878,7 +1884,7 @@ js_result_t js_object_add_field_array( js_element_t * _documet, js_element_t * _
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-js_result_t js_object_add_field_object( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, js_element_t ** _object )
+js_result_t js_object_add_field_object( js_element_t * _documet, js_element_t * _element, js_string_t _key, js_element_t ** _object )
 {
     js_document_t * document = (js_document_t *)_documet;
 
@@ -1888,7 +1894,7 @@ js_result_t js_object_add_field_object( js_element_t * _documet, js_element_t * 
 
     JS_ALLOCATOR_MEMORY_CHECK( object, JS_FAILURE );
 
-    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, _keysize, (js_element_t *)object ) == JS_FAILURE )
+    if( __js_object_add_string( document, (js_element_object_t *)_element, _key, (js_element_t *)object ) == JS_FAILURE )
     {
         return JS_FAILURE;
     }
@@ -1988,13 +1994,13 @@ js_result_t js_array_push_real( js_element_t * _documet, js_element_t * _element
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-js_result_t js_array_push_string( js_element_t * _documet, js_element_t * _element, const char * _value, size_t _valuesize )
+js_result_t js_array_push_string( js_element_t * _documet, js_element_t * _element, js_string_t _value )
 {
     js_document_t * document = (js_document_t *)_documet;
 
     js_allocator_t * allocator = __js_document_allocator( document );
 
-    js_element_string_t * value = document->string_create( allocator, _value, _valuesize );
+    js_element_string_t * value = document->string_create( allocator, _value );
 
     JS_ALLOCATOR_MEMORY_CHECK( value, JS_FAILURE );
 
@@ -2231,7 +2237,7 @@ const js_element_t * js_object_get( const js_element_t * _element, const char * 
     return JS_NULLPTR;
 }
 //////////////////////////////////////////////////////////////////////////
-const js_element_t * js_object_getn( const js_element_t * _object, const char * _key, js_size_t _size )
+const js_element_t * js_object_getn( const js_element_t * _object, js_string_t _key )
 {
     const js_element_object_t * object = (const js_element_object_t *)_object;
 
@@ -2242,10 +2248,7 @@ const js_element_t * js_object_getn( const js_element_t * _object, const char * 
     {
         const js_element_string_t * key = (const js_element_string_t *)it_key->element;
 
-        const char * key_value = key->value.value;
-        js_size_t key_size = key->value.size;
-
-        if( __js_strzcmp( _key, _size, key_value, key_size ) == JS_FALSE )
+        if( __js_strzcmp( _key, key->value ) == JS_FALSE )
         {
             continue;
         }

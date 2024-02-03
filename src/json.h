@@ -45,6 +45,18 @@ typedef struct js_string_t
 #define JS_NULLPTR ((void*)0)
 #endif
 
+#ifndef JS_CONST_STRING
+#define JS_CONST_STRING(S) { S, sizeof(S) - 1 }
+#endif
+
+#ifndef JS_MAKE_STRING
+#define JS_MAKE_STRING(S, Z) { S, Z }
+#endif
+
+#ifndef JS_STD_STRING
+#define JS_STD_STRING(S) { S.c_str(), S.size() }
+#endif
+
 #ifndef JS_ALLOCATOR_MEMORY_CHECK_ENABLE
 #   ifndef NDEBUG
 #       define JS_ALLOCATOR_MEMORY_CHECK_ENABLE 1
@@ -111,21 +123,21 @@ js_result_t js_clone( js_allocator_t _allocator, js_flags_t _flags, const js_ele
 js_result_t js_patch( js_allocator_t _allocator, js_flags_t _flags, const js_element_t * _base, const js_element_t * _patch, js_element_t ** _total );
 js_result_t js_create( js_allocator_t _allocator, js_flags_t _flags, js_element_t ** _documet );
 
-js_result_t js_object_add_field_null( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize );
-js_result_t js_object_add_field_true( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize );
-js_result_t js_object_add_field_false( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize );
-js_result_t js_object_add_field_integer( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, js_integer_t _value );
-js_result_t js_object_add_field_real( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, js_real_t _value );
-js_result_t js_object_add_field_string( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, const char * _value, size_t _valuesize );
-js_result_t js_object_add_field_array( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, js_element_t ** _array );
-js_result_t js_object_add_field_object( js_element_t * _documet, js_element_t * _element, const char * _key, size_t _keysize, js_element_t ** _object );
+js_result_t js_object_add_field_null( js_element_t * _documet, js_element_t * _element, js_string_t _key );
+js_result_t js_object_add_field_true( js_element_t * _documet, js_element_t * _element, js_string_t _key );
+js_result_t js_object_add_field_false( js_element_t * _documet, js_element_t * _element, js_string_t _key );
+js_result_t js_object_add_field_integer( js_element_t * _documet, js_element_t * _element, js_string_t _key, js_integer_t _value );
+js_result_t js_object_add_field_real( js_element_t * _documet, js_element_t * _element, js_string_t _key, js_real_t _value );
+js_result_t js_object_add_field_string( js_element_t * _documet, js_element_t * _element, js_string_t _key, js_string_t _value );
+js_result_t js_object_add_field_array( js_element_t * _documet, js_element_t * _element, js_string_t _key, js_element_t ** _array );
+js_result_t js_object_add_field_object( js_element_t * _documet, js_element_t * _element, js_string_t _key, js_element_t ** _object );
 
 js_result_t js_array_push_null( js_element_t * _documet, js_element_t * _element );
 js_result_t js_array_push_true( js_element_t * _documet, js_element_t * _element );
 js_result_t js_array_push_false( js_element_t * _documet, js_element_t * _element );
 js_result_t js_array_push_integer( js_element_t * _documet, js_element_t * _element, js_integer_t _value );
 js_result_t js_array_push_real( js_element_t * _documet, js_element_t * _element, js_real_t _value );
-js_result_t js_array_push_string( js_element_t * _documet, js_element_t * _element, const char * _value, size_t _valuesize );
+js_result_t js_array_push_string( js_element_t * _documet, js_element_t * _element, js_string_t _value );
 js_result_t js_array_push_array( js_element_t * _documet, js_element_t * _element, js_element_t ** _array );
 js_result_t js_array_push_object( js_element_t * _documet, js_element_t * _element, js_element_t ** _object );
 
@@ -153,7 +165,7 @@ const js_element_t * js_array_get( const js_element_t * _element, js_size_t _ind
 
 js_size_t js_object_size( const js_element_t * _element );
 const js_element_t * js_object_get( const js_element_t * _element, const char * _key );
-const js_element_t * js_object_getn( const js_element_t * _element, const char * _key, js_size_t _size );
+const js_element_t * js_object_getn( const js_element_t * _element, js_string_t _key );
 
 typedef js_result_t( *js_array_visitor_fun_t )(js_size_t _index, const js_element_t * _value, void * _ud);
 js_result_t js_array_visit( const js_element_t * _element, js_array_visitor_fun_t _visitor, void * _ud );
