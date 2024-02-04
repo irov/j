@@ -1,5 +1,7 @@
 #include "json_dump.h"
 
+#define JS_DUMP( _ctx, _size ) ((char *)(*_ctx->buffer)(_size, _ctx->ud))
+
 //////////////////////////////////////////////////////////////////////////
 static void __js_memcpy( char * _dst, const char * _src, js_size_t _size )
 {
@@ -11,7 +13,7 @@ static void __js_memcpy( char * _dst, const char * _src, js_size_t _size )
 //////////////////////////////////////////////////////////////////////////
 static void __js_dump_char( js_dump_ctx_t * _ctx, char _value )
 {
-    char * dst = (*_ctx->buffer)(1, _ctx->ud);
+    char * dst = JS_DUMP( _ctx, 1 );
 
     if( dst == JS_NULLPTR )
     {
@@ -23,7 +25,7 @@ static void __js_dump_char( js_dump_ctx_t * _ctx, char _value )
 //////////////////////////////////////////////////////////////////////////
 static void __js_dump_string_internal( js_dump_ctx_t * _ctx, const char * _value, size_t _size )
 {
-    char * dst = (*_ctx->buffer)(_size, _ctx->ud);
+    char * dst = JS_DUMP( _ctx, _size );
 
     if( dst == JS_NULLPTR )
     {
@@ -79,7 +81,7 @@ static void __js_dump_integer( js_dump_ctx_t * _ctx, js_integer_t _value )
 
     js_size_t symbols_size = JS_MAX_INTEGER_SYMBOLS - (it - symbols);
 
-    char * dst = (*_ctx->buffer)(symbols_size, _ctx->ud);
+    char * dst = JS_DUMP( _ctx, symbols_size );
 
     if( dst == JS_NULLPTR )
     {
@@ -126,7 +128,7 @@ static void __js_dump_double( js_dump_ctx_t * _ctx, double _value, int32_t _prec
             ++n;
         }
 
-        char * dst = (*_ctx->buffer)(n, _ctx->ud);
+        char * dst = JS_DUMP( _ctx, n );
 
         if( dst == JS_NULLPTR )
         {
@@ -178,7 +180,7 @@ static void __js_dump_double( js_dump_ctx_t * _ctx, double _value, int32_t _prec
         }
         else
         {
-            char * dst = (*_ctx->buffer)(nz, _ctx->ud);
+            char * dst = JS_DUMP( _ctx, nz );
 
             if( dst == JS_NULLPTR )
             {
@@ -322,11 +324,17 @@ void js_make_dump_ctx_buffer( js_buffer_t * _buffer, js_dump_ctx_t * const _ctx 
     _ctx->ud = _buffer;
 }
 //////////////////////////////////////////////////////////////////////////
+void js_make_dump_ctx_default( js_dump_buffer_fun_t _fun, void * _ud, js_dump_ctx_t * const _ctx )
+{
+    _ctx->buffer = _fun;
+    _ctx->ud = _ud;
+}
+//////////////////////////////////////////////////////////////////////////
 js_result_t js_dump( const js_element_t * _element, js_dump_ctx_t * _ctx )
 {
     __js_dump_object( _ctx, _element );
 
-    char * dst = _ctx->buffer( 1, _ctx->ud );
+    char * dst = JS_DUMP( _ctx, 1 );
 
     if( dst == JS_NULLPTR )
     {

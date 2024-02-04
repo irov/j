@@ -3,16 +3,25 @@
 
 #include "json.h"
 
-typedef char * (*js_dump_buffer_fun_t)(js_size_t _size, void * _ud);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-typedef struct js_dump_ctx_t
-{   
-    js_dump_buffer_fun_t buffer;
-    void * ud;
-} js_dump_ctx_t;
+    typedef void * (*js_dump_buffer_fun_t)(js_size_t _size, void * _ud);
 
-void js_make_dump_ctx_buffer( js_buffer_t * _buffer, js_dump_ctx_t * const _ctx );
+    typedef struct js_dump_ctx_t
+    {
+        js_dump_buffer_fun_t buffer;
+        void * ud;
+    } js_dump_ctx_t;
 
-js_result_t js_dump( const js_element_t * _element, js_dump_ctx_t * _ctx );
+    void js_make_dump_ctx_buffer( js_buffer_t * _buffer, js_dump_ctx_t * const _ctx );
+    void js_make_dump_ctx_default( js_dump_buffer_fun_t _fun, void * _ud, js_dump_ctx_t * const _ctx );
+
+    js_result_t js_dump( const js_element_t * _element, js_dump_ctx_t * _ctx );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

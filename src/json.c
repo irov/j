@@ -620,6 +620,15 @@ static js_result_t __js_array_add( js_document_t * _document, js_element_array_t
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
+static js_size_t __js_strlen( const char * _value )
+{
+    const char * it = _value;
+
+    for( ; *it != '\0'; ++it );
+
+    return it - _value;
+ }
+//////////////////////////////////////////////////////////////////////////
 static js_bool_t __js_isspace( char c )
 {
     return (c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f');
@@ -1846,7 +1855,18 @@ js_result_t js_object_add_field_real( js_element_t * _documet, js_element_t * _e
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-js_result_t js_object_add_field_string( js_element_t * _documet, js_element_t * _element, js_string_t _key, js_string_t _value )
+js_result_t js_object_add_field_string( js_element_t * _documet, js_element_t * _element, js_string_t _key, const char * _value )
+{
+    js_size_t value_size = __js_strlen( _value );
+
+    js_string_t value_string = { _value, value_size };
+
+    js_result_t result = js_object_add_field_stringn( _documet, _element, _key, value_string );
+
+    return result;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_object_add_field_stringn( js_element_t * _documet, js_element_t * _element, js_string_t _key, js_string_t _value )
 {
     js_document_t * document = (js_document_t *)_documet;
 
@@ -1994,7 +2014,18 @@ js_result_t js_array_push_real( js_element_t * _documet, js_element_t * _element
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
-js_result_t js_array_push_string( js_element_t * _documet, js_element_t * _element, js_string_t _value )
+js_result_t js_array_push_string( js_element_t * _documet, js_element_t * _element, const char * _value )
+{
+    js_size_t value_size = __js_strlen( _value );
+
+    js_string_t value_string = {_value, value_size};
+
+    js_result_t result = js_array_push_stringn( _documet, _element, value_string );
+
+    return result;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_array_push_stringn( js_element_t * _documet, js_element_t * _element, js_string_t _value )
 {
     js_document_t * document = (js_document_t *)_documet;
 

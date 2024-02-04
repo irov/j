@@ -3,14 +3,22 @@
 
 #include "json.h"
 
-typedef void (*js_binary_write_fun_t)(const void * _buffer, js_size_t _size, void * _ud);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-typedef struct js_binary_ctx_t
-{
-    js_binary_write_fun_t write;
-    void * ud;
-} js_binary_ctx_t;
+    typedef void (*js_binary_write_fun_t)(const void * _buffer, js_size_t _size, void * _ud);
 
-void js_binary( const js_element_t * _element, js_binary_ctx_t * _ctx );
+    typedef struct js_binary_ctx_t
+    {
+        js_binary_write_fun_t write;
+        void * ud;
+    } js_binary_ctx_t;
+
+    void js_binary( const js_element_t * _element, js_binary_ctx_t * _ctx );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
