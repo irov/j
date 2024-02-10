@@ -1819,6 +1819,22 @@ js_result_t js_object_add_field_false( js_element_t * _documet, js_element_t * _
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
+js_result_t js_object_add_field_boolean( js_element_t * _documet, js_element_t * _element, js_string_t _key, js_bool_t _value )
+{
+    if( _value == JS_TRUE )
+    {
+        js_result_t result = js_object_add_field_true( _documet, _element, _key );
+
+        return result;
+    }
+    else
+    {
+        js_result_t result = js_object_add_field_false( _documet, _element, _key );
+
+        return result;
+    }
+}
+//////////////////////////////////////////////////////////////////////////
 js_result_t js_object_add_field_integer( js_element_t * _documet, js_element_t * _element, js_string_t _key, js_integer_t _value )
 {
     js_document_t * document = (js_document_t *)_documet;
@@ -1976,6 +1992,22 @@ js_result_t js_array_push_false( js_element_t * _documet, js_element_t * _elemen
     }
 
     return JS_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_array_push_boolean( js_element_t * _documet, js_element_t * _element, js_bool_t _value )
+{
+    if( _value == JS_TRUE )
+    {
+        js_result_t result = js_array_push_true( _documet, _element );
+
+        return result;
+    }
+    else
+    {
+        js_result_t result = js_array_push_false( _documet, _element );
+
+        return result;
+    }
 }
 //////////////////////////////////////////////////////////////////////////
 js_result_t js_array_push_integer( js_element_t * _documet, js_element_t * _element, js_integer_t _value )

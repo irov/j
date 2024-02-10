@@ -126,6 +126,7 @@ extern "C" {
     js_result_t js_object_add_field_null( js_element_t * _documet, js_element_t * _element, js_string_t _key );
     js_result_t js_object_add_field_true( js_element_t * _documet, js_element_t * _element, js_string_t _key );
     js_result_t js_object_add_field_false( js_element_t * _documet, js_element_t * _element, js_string_t _key );
+    js_result_t js_object_add_field_boolean( js_element_t * _documet, js_element_t * _element, js_string_t _key, js_bool_t _value );
     js_result_t js_object_add_field_integer( js_element_t * _documet, js_element_t * _element, js_string_t _key, js_integer_t _value );
     js_result_t js_object_add_field_real( js_element_t * _documet, js_element_t * _element, js_string_t _key, js_real_t _value );
     js_result_t js_object_add_field_string( js_element_t * _documet, js_element_t * _element, js_string_t _key, const char * _value );
@@ -136,6 +137,7 @@ extern "C" {
     js_result_t js_array_push_null( js_element_t * _documet, js_element_t * _element );
     js_result_t js_array_push_true( js_element_t * _documet, js_element_t * _element );
     js_result_t js_array_push_false( js_element_t * _documet, js_element_t * _element );
+    js_result_t js_array_push_boolean( js_element_t * _documet, js_element_t * _element, js_bool_t _value );
     js_result_t js_array_push_integer( js_element_t * _documet, js_element_t * _element, js_integer_t _value );
     js_result_t js_array_push_real( js_element_t * _documet, js_element_t * _element, js_real_t _value );
     js_result_t js_array_push_string( js_element_t * _documet, js_element_t * _element, const char * _value );
