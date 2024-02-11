@@ -1,4 +1,4 @@
-#include "json_binary.h"
+#include "json/json_binary.h"
 
 //////////////////////////////////////////////////////////////////////////
 static void __binary_write_element( js_binary_ctx_t * _ctx, const js_element_t * _element );

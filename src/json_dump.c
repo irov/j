@@ -1,4 +1,6 @@
-#include "json_dump.h"
+#include "json/json_dump.h"
+
+#include "json/json.h"
 
 #define JS_DUMP( _ctx, _size ) ((char *)(*_ctx->buffer)(_size, _ctx->ud))
 
