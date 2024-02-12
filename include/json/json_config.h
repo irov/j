@@ -12,6 +12,10 @@
 #   pragma warning(disable: 4200)
 #endif
 
+#ifndef JS_LLONG_MAX
+#define JS_LLONG_MAX 9223372036854775807LL
+#endif
+
 typedef uint8_t js_result_t;
 typedef uint8_t js_bool_t;
 typedef size_t js_size_t;
