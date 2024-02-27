@@ -112,12 +112,12 @@ typedef struct js_document_t
 #define JS_ASSERT_CAST_DECLARE(Type, E) \
 Type * JS_PP_CONCATENATE(js_assert_cast, Type)( Type * _element, const char * _file, int32_t _code ) \
 { \
-    JS_ASSERT( (_file, _code, _element->base.type == E) ); \
+    JS_ASSERT( _element->base.type == E, _file, _code ); \
     return _element; \
 }\
 const Type * JS_PP_CONCATENATE(js_assert_const_cast, Type)( const Type * _element, const char * _file, int32_t _code ) \
 { \
-    JS_ASSERT( (_file, _code, _element->base.type == E) ); \
+    JS_ASSERT( _element->base.type == E, _file, _code ); \
     return _element; \
 }
 //////////////////////////////////////////////////////////////////////////
