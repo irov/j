@@ -302,7 +302,7 @@ static void __js_dump_element( js_dump_ctx_t * _ctx, const js_element_t * _eleme
     }
 }
 //////////////////////////////////////////////////////////////////////////
-static char * __js_dump_buffer( js_size_t _size, void * _ud )
+static void * __js_dump_buffer( js_size_t _size, void * _ud )
 {
     js_buffer_t * buffer = (js_buffer_t *)_ud;
 
@@ -317,7 +317,7 @@ static char * __js_dump_buffer( js_size_t _size, void * _ud )
 
     buffer->memory += _size;
 
-    return (char *)new_buffer;
+    return new_buffer;
 }
 //////////////////////////////////////////////////////////////////////////
 void js_make_dump_ctx_buffer( js_buffer_t * _buffer, js_dump_ctx_t * const _ctx )
