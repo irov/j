@@ -708,33 +708,41 @@ static js_result_t __js_parse_element( js_document_t * _document, const char ** 
 
     if( *data_soa == ',' || *data_soa == _token )
     {
-        if( js_strstr( data_begin, data_soa, "true" ) != JS_NULLPTR )
+        const char * data_true = js_strstr( data_begin, data_soa, "true" );
+
+        if( data_true != JS_NULLPTR )
         {
             js_element_true_t * t = __js_true_create( allocator );
 
             *_element = (js_element_t *)t;
 
-            *_data = data_begin + 4;
+            *_data = data_true + 4;
 
             return JS_SUCCESSFUL;
         }
-        else if( js_strstr( data_begin, data_soa, "false" ) != JS_NULLPTR )
+        
+        const char * data_false = js_strstr( data_begin, data_soa, "false" );
+
+        if( data_false != JS_NULLPTR )
         {
             js_element_false_t * f = __js_false_create( allocator );
 
             *_element = (js_element_t *)f;
 
-            *_data = data_begin + 5;
+            *_data = data_false + 5;
 
             return JS_SUCCESSFUL;
         }
-        else if( js_strstr( data_begin, data_soa, "null" ) != JS_NULLPTR )
+
+        const char * data_null = js_strstr( data_begin, data_soa, "null" );
+        
+        if( data_null != JS_NULLPTR )
         {
             js_element_null_t * null = __js_null_create( allocator );
 
             *_element = (js_element_t *)null;
 
-            *_data = data_begin + 4;
+            *_data = data_null + 4;
 
             return JS_SUCCESSFUL;
         }
@@ -970,13 +978,18 @@ static js_result_t __js_parse_object( js_document_t * _document, const char ** _
             return JS_FAILURE;
         }
 
-        const char * value_end = js_strpbrk( value_iterator, _end, ",}" );
+        const char * value_end = js_strskip( value_iterator, _end, " \t\n\r" );
 
         if( *value_end == '}' )
         {
             *_data = value_end + 1;
 
             break;
+        }
+
+        if( *value_end != ',' )
+        {
+            return JS_FAILURE;
         }
 
         data_iterator = value_end + 1;
