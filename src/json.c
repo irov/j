@@ -265,6 +265,14 @@ static js_element_real_t * __js_real_create( js_allocator_t * _allocator, js_rea
 
         return real;
     }
+    else if( _value == 0.5 )
+    {
+        static js_element_real_t cache_half_real = {js_type_real, 0.5};
+
+        js_element_real_t * real = &cache_half_real;
+
+        return real;
+    }
     else if( _value == 1.0 )
     {
         static js_element_real_t cache_one_real = {js_type_real, 1.0};
@@ -405,7 +413,7 @@ static js_block_t * __js_block_create( js_allocator_t * _allocator, js_node_t **
 
         free = node;
     }
-    
+
     block->prev = JS_NULLPTR;
 
     *_free = free;
@@ -500,7 +508,7 @@ static void __js_element_destroy( js_document_t * _document, js_element_t * _ele
 
             js_real_t value = real->value;
 
-            if( value == 0.0 || value == 1.0 )
+            if( value == 0.0 || value == 0.5 || value == 1.0 )
             {
                 // cache
             }
@@ -720,7 +728,7 @@ static js_result_t __js_parse_element( js_document_t * _document, const char ** 
 
             return JS_SUCCESSFUL;
         }
-        
+
         const char * data_false = js_strstr( data_begin, data_soa, "false" );
 
         if( data_false != JS_NULLPTR )
@@ -735,7 +743,7 @@ static js_result_t __js_parse_element( js_document_t * _document, const char ** 
         }
 
         const char * data_null = js_strstr( data_begin, data_soa, "null" );
-        
+
         if( data_null != JS_NULLPTR )
         {
             js_element_null_t * null = __js_null_create( allocator );
@@ -1022,7 +1030,7 @@ static void __js_buffer_free( void * _ptr, void * _ud )
 //////////////////////////////////////////////////////////////////////////
 void js_make_buffer( void * _memory, js_size_t _capacity, js_buffer_t * const _buffer )
 {
-    _buffer->begin = (uint8_t *)_memory;    
+    _buffer->begin = (uint8_t *)_memory;
     _buffer->end = (uint8_t *)_memory + _capacity;
 
     _buffer->memory = _buffer->begin;
@@ -1297,7 +1305,7 @@ static js_result_t __js_patch_object( js_document_t * _document, js_element_t * 
             {
                 continue;
             }
-            
+
             js_type_t object_value_type = js_type( object_value );
             js_type_t patch_value_type = js_type( patch_value );
 
@@ -1501,7 +1509,7 @@ js_result_t js_object_add_field_string( js_element_t * _documet, js_element_t * 
 {
     js_size_t value_size = js_strlen( _value );
 
-    js_string_t value_string = { _value, value_size };
+    js_string_t value_string = {_value, value_size};
 
     js_result_t result = js_object_add_field_stringn( _documet, _element, _key, value_string );
 
