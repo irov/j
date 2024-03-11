@@ -296,10 +296,11 @@ static js_element_real_t * __js_real_create( js_allocator_t * _allocator, js_rea
 static js_element_string_t * __js_string_create_allocator( js_allocator_t * _allocator, js_string_t _value )
 {
     const char * value_str = _value.value;
+    js_size_t origin_size = _value.size;
     js_size_t value_size = _value.size;
 
     for( const char * it_value = value_str,
-        *it_value_end = value_str + value_size;
+        *it_value_end = value_str + origin_size;
         it_value != it_value_end; ++it_value )
     {
         char c = *it_value;
@@ -329,7 +330,7 @@ static js_element_string_t * __js_string_create_allocator( js_allocator_t * _all
     char * it_buffer = string_buffer->buffer;
 
     for( const char * it_value = value_str,
-        *it_value_end = value_str + value_size;
+        *it_value_end = value_str + origin_size;
         it_value != it_value_end; ++it_value )
     {
         char c = *it_value;
