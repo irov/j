@@ -5,6 +5,7 @@
 
 js_bool_t js_isspace( char c );
 js_bool_t js_isdigit( char c );
+void js_memcpy( char * _dst, const char * _src, js_size_t _size );
 js_size_t js_strlen( const char * _value );
 const char * js_strpbrk( const char * _begin, const char * _end, const char * _str );
 js_bool_t js_chrskip( char _ch, const char * _str );

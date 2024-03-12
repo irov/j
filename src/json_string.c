@@ -11,6 +11,14 @@ js_bool_t js_isdigit( char c )
     return (c >= '0' && c <= '9');
 }
 //////////////////////////////////////////////////////////////////////////
+void js_memcpy( char * _dst, const char * _src, js_size_t _size )
+{
+    while( _size-- )
+    {
+        *_dst++ = *_src++;
+    }
+}
+//////////////////////////////////////////////////////////////////////////
 js_size_t js_strlen( const char * _value )
 {
     const char * it = _value;

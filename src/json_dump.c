@@ -2,16 +2,10 @@
 
 #include "json/json.h"
 
+#include "json_string.h"
+
 #define JS_DUMP( _ctx, _size ) ((char *)(*_ctx->buffer)(_size, _ctx->ud))
 
-//////////////////////////////////////////////////////////////////////////
-static void __js_memcpy( char * _dst, const char * _src, js_size_t _size )
-{
-    while( _size-- )
-    {
-        *_dst++ = *_src++;
-    }
-}
 //////////////////////////////////////////////////////////////////////////
 static void __js_dump_char( js_dump_ctx_t * _ctx, char _value )
 {
@@ -25,30 +19,89 @@ static void __js_dump_char( js_dump_ctx_t * _ctx, char _value )
     *(dst) = _value;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __js_dump_string_internal( js_dump_ctx_t * _ctx, const char * _value, size_t _size )
+static void __js_dump_string( js_dump_ctx_t * _ctx, js_string_t _value )
 {
-    char * dst = JS_DUMP( _ctx, _size );
+    const char * value_str = _value.value;
+    js_size_t origin_size = _value.size;
+    js_size_t value_size = _value.size;
+
+    for( const char * it_value = value_str,
+        *it_value_end = value_str + origin_size;
+        it_value != it_value_end; ++it_value )
+    {
+        char c = *it_value;
+
+        switch( c )
+        {
+        case '\"':
+            ++value_size;
+            break;
+        case '\\':
+            ++value_size;
+            break;
+        default:
+            break;
+        }
+    }
+
+    char * dst = JS_DUMP( _ctx, value_size );
 
     if( dst == JS_NULLPTR )
     {
         return;
     }
 
-    __js_memcpy( dst, _value, _size );
+    char * it_buffer = dst;
+
+    for( const char * it_value = value_str,
+        *it_value_end = value_str + origin_size;
+        it_value != it_value_end; ++it_value )
+    {
+        char c = *it_value;
+
+        switch( c )
+        {
+        case '\"':
+            *it_buffer++ = '\\';
+            *it_buffer++ = '\"';
+            break;
+        case '\\':
+            *it_buffer++ = '\\';
+            *it_buffer++ = '\\';
+            break;
+        default:
+            *it_buffer++ = c;
+        }
+    }
 }
 //////////////////////////////////////////////////////////////////////////
-static void __js_dump_string( js_dump_ctx_t * _ctx, js_string_t _value )
+static void __js_dump_string_internal( js_dump_ctx_t * _ctx, const char * _value, js_size_t _size )
 {
-    __js_dump_string_internal( _ctx, _value.value, _value.size );
+    js_string_t str = {_value, _size};
+
+    __js_dump_string( _ctx, str );
 }
 //////////////////////////////////////////////////////////////////////////
-#define JS_DUMP_INTERNAL(data, value) __js_dump_string_internal(data, value, sizeof(value) - 1)
+#define JS_DUMP_INTERNAL(data, value) __js_dump_string_internal(data, value, sizeof( value ) - 1)
 //////////////////////////////////////////////////////////////////////////
 #define JS_MAX_INTEGER_SYMBOLS 20
 //////////////////////////////////////////////////////////////////////////
 static void __js_dump_integer( js_dump_ctx_t * _ctx, js_integer_t _value )
 {
-    char symbols[JS_MAX_INTEGER_SYMBOLS];
+    if( _value == 0 )
+    {
+        JS_DUMP_INTERNAL( _ctx, "0" );
+
+        return;
+    }
+    else if( _value == 1 )
+    {
+        JS_DUMP_INTERNAL( _ctx, "1" );
+
+        return;
+    }
+
+    char symbols[JS_MAX_INTEGER_SYMBOLS] = {'\0'};
 
     char * it = symbols + JS_MAX_INTEGER_SYMBOLS;
     
@@ -90,7 +143,7 @@ static void __js_dump_integer( js_dump_ctx_t * _ctx, js_integer_t _value )
         return;
     }
 
-    __js_memcpy( dst, it, symbols_size );
+    js_memcpy( dst, it, symbols_size );
 }
 //////////////////////////////////////////////////////////////////////////
 static void __js_dump_double( js_dump_ctx_t * _ctx, double _value, int32_t _precision )
@@ -98,6 +151,18 @@ static void __js_dump_double( js_dump_ctx_t * _ctx, double _value, int32_t _prec
     if( _value == 0.0 )
     {
         JS_DUMP_INTERNAL( _ctx, "0.0" );
+
+        return;
+    }
+    else if( _value == 0.5 )
+    {
+        JS_DUMP_INTERNAL( _ctx, "0.5" );
+
+        return;
+    }
+    else if( _value == 1.0 )
+    {
+        JS_DUMP_INTERNAL( _ctx, "1.0" );
 
         return;
     }
