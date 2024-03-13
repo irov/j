@@ -19,7 +19,7 @@ static void __js_dump_char( js_dump_ctx_t * _ctx, char _value )
     *(dst) = _value;
 }
 //////////////////////////////////////////////////////////////////////////
-static void __js_dump_string( js_dump_ctx_t * _ctx, js_string_t _value )
+static js_result_t __js_dump_string( js_dump_ctx_t * _ctx, js_string_t _value )
 {
     const char * value_str = _value.value;
     js_size_t origin_size = _value.size;
@@ -48,7 +48,7 @@ static void __js_dump_string( js_dump_ctx_t * _ctx, js_string_t _value )
 
     if( dst == JS_NULLPTR )
     {
-        return;
+        return JS_FAILURE;
     }
 
     char * it_buffer = dst;
@@ -73,6 +73,8 @@ static void __js_dump_string( js_dump_ctx_t * _ctx, js_string_t _value )
             *it_buffer++ = c;
         }
     }
+
+    return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
 static void __js_dump_string_internal( js_dump_ctx_t * _ctx, const char * _value, js_size_t _size )
@@ -411,5 +413,29 @@ js_result_t js_dump( const js_element_t * _element, js_dump_ctx_t * _ctx )
     *dst = '\0';
 
     return JS_SUCCESSFUL;
+}
+//////////////////////////////////////////////////////////////////////////
+js_result_t js_dump_string( js_string_t _value, char * const _buffer, js_size_t _capacity, js_size_t * const _size )
+{
+    js_buffer_t dump_buff;
+    js_make_buffer( _buffer, _capacity, &dump_buff );
+
+    js_dump_ctx_t ctx;
+    js_make_dump_ctx_buffer( &dump_buff, &ctx );
+
+    js_result_t result = __js_dump_string( &ctx, _value );
+
+    if( result != JS_SUCCESSFUL )
+    {
+        return JS_FAILURE;
+    }
+
+    if( _size != JS_NULLPTR )
+    {
+        *_size = js_get_buffer_size( &dump_buff );
+    }
+
+    return JS_SUCCESSFUL;
+
 }
 //////////////////////////////////////////////////////////////////////////

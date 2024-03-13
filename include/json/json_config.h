@@ -16,8 +16,8 @@
 #define JS_LLONG_MAX 9223372036854775807LL
 #endif
 
-typedef uint8_t js_result_t;
-typedef uint8_t js_bool_t;
+typedef uint32_t js_result_t;
+typedef uint32_t js_bool_t;
 typedef size_t js_size_t;
 
 typedef int64_t js_integer_t;

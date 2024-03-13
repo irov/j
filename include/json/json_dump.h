@@ -20,6 +20,8 @@ extern "C" {
 
     js_result_t js_dump( const js_element_t * _element, js_dump_ctx_t * _ctx );
 
+    js_result_t js_dump_string( js_string_t _value, char * const _buffer, js_size_t _capacity, js_size_t * const _size );
+
 #ifdef __cplusplus
 }
 #endif
