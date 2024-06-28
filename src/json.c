@@ -9,9 +9,7 @@
 
 #if JS_ALLOCATOR_MEMORY_CHECK_ENABLE
 #   define JS_ALLOCATOR_MEMORY_CHECK(Ptr, Ret) if( (Ptr) == JS_NULLPTR ) return (Ret);
-#   define JS_ALLOCATOR_MEMORY_CHECK(Ptr, Ret) if( (Ptr) == JS_NULLPTR ) return (Ret);
 #else
-#   define JS_ALLOCATOR_MEMORY_CHECK(Ptr, Ret)
 #   define JS_ALLOCATOR_MEMORY_CHECK(Ptr, Ret)
 #endif
 
