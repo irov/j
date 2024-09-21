@@ -1709,6 +1709,25 @@ js_result_t js_array_push_object( js_element_t * _documet, js_element_t * _eleme
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
+void js_array_clear( js_element_t * _document, js_element_t * _element )
+{
+    js_document_t * document = (js_document_t *)_document;
+
+    js_element_array_t * array = JS_CAST( js_element_array_t, _element );
+
+    js_node_t * it = array->values;
+
+    for( ; it != JS_NULLPTR; it = it->next )
+    {
+        js_element_t * value = it->element;
+
+        __js_element_destroy( document, value );
+    }
+
+    array->values = JS_NULLPTR;
+    array->size = 0;
+}
+//////////////////////////////////////////////////////////////////////////
 void js_free( js_element_t * _element )
 {
     js_document_t * document = (js_document_t *)_element;
@@ -1842,7 +1861,7 @@ js_size_t js_array_size( const js_element_t * _element )
     return size;
 }
 //////////////////////////////////////////////////////////////////////////
-const js_element_t * js_array_get( const js_element_t * _element, js_size_t _index )
+js_element_t * js_array_get( const js_element_t * _element, js_size_t _index )
 {
     const js_element_array_t * array = JS_CONST_CAST( js_element_array_t, _element );
 
@@ -1853,7 +1872,7 @@ const js_element_t * js_array_get( const js_element_t * _element, js_size_t _ind
         it = it->next;
     }
 
-    const js_element_t * value = it->element;
+    js_element_t * value = it->element;
 
     return value;
 }
@@ -1867,7 +1886,7 @@ js_size_t js_object_size( const js_element_t * _object )
     return size;
 }
 //////////////////////////////////////////////////////////////////////////
-const js_element_t * js_object_get( const js_element_t * _element, const char * _key )
+js_element_t * js_object_get( const js_element_t * _element, const char * _key )
 {
     const js_element_object_t * object = JS_CONST_CAST( js_element_object_t, _element );
 
@@ -1886,7 +1905,7 @@ const js_element_t * js_object_get( const js_element_t * _element, const char * 
             continue;
         }
 
-        const js_element_t * value = it_value->element;
+        js_element_t * value = it_value->element;
 
         return value;
     }
@@ -1894,7 +1913,7 @@ const js_element_t * js_object_get( const js_element_t * _element, const char * 
     return JS_NULLPTR;
 }
 //////////////////////////////////////////////////////////////////////////
-const js_element_t * js_object_getn( const js_element_t * _object, js_string_t _key )
+js_element_t * js_object_getn( const js_element_t * _object, js_string_t _key )
 {
     const js_element_object_t * object = JS_CONST_CAST( js_element_object_t, _object );
 
@@ -1910,7 +1929,7 @@ const js_element_t * js_object_getn( const js_element_t * _object, js_string_t _
             continue;
         }
 
-        const js_element_t * value = it_value->element;
+        js_element_t * value = it_value->element;
 
         return value;
     }
