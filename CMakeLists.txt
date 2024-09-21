@@ -25,7 +25,7 @@ SOURCE_GROUP(json FILES ${JSON_HEADERS} ${JSON_SOURCES})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-add_library(${PROJECT_NAME} STATIC ${SOURCES})
+add_library(${PROJECT_NAME} STATIC ${JSON_SOURCES})
 
 if(JSON_TEST)
     include(CTest)
@@ -43,12 +43,7 @@ if(JSON_INSTALL)
           INCLUDES DESTINATION "include")
 
   install(FILES ${JSON_HEADERS}
-          DESTINATION "include")
-
-  # Install exports for the install-tree.
-  install(EXPORT json_targets
-          NAMESPACE json::
-          DESTINATION "${JSON_INSTALL_CMAKE_DIR}")
+          DESTINATION "include/json")
 endif()
 
 set(JSON_LIBRARIES json CACHE STRING "json libraries")
