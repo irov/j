@@ -51,6 +51,7 @@ js_result_t js_array_push_stringn( js_element_t * _documet, js_element_t * _elem
 js_result_t js_array_push_array( js_element_t * _documet, js_element_t * _element, js_element_t ** _array );
 js_result_t js_array_push_object( js_element_t * _documet, js_element_t * _element, js_element_t ** _object );
 
+void js_array_remove( js_element_t * _document, js_element_t * _element, js_size_t _index );
 void js_array_clear( js_element_t * _document, js_element_t * _element );
 
 void js_free( js_element_t * _element );

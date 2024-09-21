@@ -429,6 +429,11 @@ static void __js_string_destroy_allocator( js_allocator_t * _allocator, js_eleme
     _allocator->free( _string, _allocator->ud );
 }
 //////////////////////////////////////////////////////////////////////////
+static void __js_node_destroy( js_document_t * _document, js_node_t * _node )
+{
+    _document->node_destroy( _document, _node );
+}
+//////////////////////////////////////////////////////////////////////////
 static void __js_element_destroy( js_document_t * _document, js_element_t * _element );
 static void __js_array_destroy( js_document_t * _document, js_element_array_t * _array );
 static void __js_object_destroy( js_document_t * _document, js_element_object_t * _object );
@@ -508,7 +513,7 @@ static void __js_array_destroy( js_document_t * _document, js_element_array_t * 
 
         it_node = it_node->next;
 
-        _document->node_destroy( _document, free_node );
+        __js_node_destroy( _document, free_node );
     }
 
     js_allocator_t * allocator = __js_document_allocator( _document );
@@ -529,8 +534,8 @@ static void __js_object_destroy( js_document_t * _document, js_element_object_t 
         it_key = it_key->next;
         it_value = it_value->next;
 
-        _document->node_destroy( _document, free_key );
-        _document->node_destroy( _document, free_value );
+        __js_node_destroy( _document, free_key );
+        __js_node_destroy( _document, free_value );
     }
 
     js_allocator_t * allocator = __js_document_allocator( _document );
@@ -1286,8 +1291,8 @@ static js_result_t __js_patch_object( js_document_t * _document, js_element_t * 
                     js_node_t * next_keys = it_object_key->next;
                     js_node_t * next_values = it_object_value->next;
 
-                    _document->node_destroy( _document, it_object_key );
-                    _document->node_destroy( _document, it_object_value );
+                    __js_node_destroy( _document, it_object_key );
+                    __js_node_destroy( _document, it_object_value );
 
                     object->keys = next_keys;
                     object->values = next_values;
@@ -1302,8 +1307,8 @@ static js_result_t __js_patch_object( js_document_t * _document, js_element_t * 
                     js_node_t * next_keys = it_object_key->next;
                     js_node_t * next_values = it_object_value->next;
 
-                    _document->node_destroy( _document, it_object_key );
-                    _document->node_destroy( _document, it_object_value );
+                    __js_node_destroy( _document, it_object_key );
+                    __js_node_destroy( _document, it_object_value );
 
                     prev_object_key->next = next_keys;
                     prev_object_value->next = next_values;
@@ -1709,6 +1714,37 @@ js_result_t js_array_push_object( js_element_t * _documet, js_element_t * _eleme
     return JS_SUCCESSFUL;
 }
 //////////////////////////////////////////////////////////////////////////
+void js_array_remove( js_element_t * _document, js_element_t * _element, js_size_t _index )
+{
+    js_document_t * document = (js_document_t *)_document;
+
+    js_element_array_t * array = JS_CAST( js_element_array_t, _element );
+
+    js_node_t * it = array->values;
+
+    for( js_size_t index = 0; index != _index; ++index )
+    {
+        JS_ASSERT( it->next != JS_NULLPTR, JS_CODE_FILE, JS_CODE_LINE );
+
+        it = it->next;
+    }
+
+    js_node_t * next = it->next;
+
+    if( next != JS_NULLPTR )
+    {
+        it->next = next->next;
+    }
+
+    js_element_t * value = it->element;
+
+    __js_element_destroy( document, value );
+
+    __js_node_destroy( document, it );
+
+    --array->size;
+}
+//////////////////////////////////////////////////////////////////////////
 void js_array_clear( js_element_t * _document, js_element_t * _element )
 {
     js_document_t * document = (js_document_t *)_document;
@@ -1722,6 +1758,8 @@ void js_array_clear( js_element_t * _document, js_element_t * _element )
         js_element_t * value = it->element;
 
         __js_element_destroy( document, value );
+
+        __js_node_destroy( document, it );
     }
 
     array->values = JS_NULLPTR;
@@ -1743,8 +1781,8 @@ void js_free( js_element_t * _element )
         it_key = it_key->next;
         it_value = it_value->next;
 
-        document->node_destroy( document, free_key );
-        document->node_destroy( document, free_value );
+        __js_node_destroy( document, free_key );
+        __js_node_destroy( document, free_value );
     }
 
     js_allocator_t * allocator = __js_document_allocator( document );
